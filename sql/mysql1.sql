@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `locations` (
   UNIQUE KEY `uk_loc_name` (`name`),
   KEY `idx_loc_name` (`name`),
   KEY `idx_loc_dept` (`department_id`),
-  CONSTRAINT `1` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_locations_department` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `log_users` (
   PRIMARY KEY (`id`),
   KEY `idx_log_user` (`user_id`),
   KEY `idx_log_date` (`created_at`),
-  CONSTRAINT `1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_log_users_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -121,8 +121,8 @@ CREATE TABLE IF NOT EXISTS `purchase_order_details` (
   PRIMARY KEY (`id`),
   KEY `purchase_order_id` (`purchase_order_id`),
   KEY `spare_part_id` (`spare_part_id`),
-  CONSTRAINT `1` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `2` FOREIGN KEY (`spare_part_id`) REFERENCES `spare_parts` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_po_details_order` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_po_details_part` FOREIGN KEY (`spare_part_id`) REFERENCES `spare_parts` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS `purchase_orders` (
   UNIQUE KEY `order_no` (`order_no`),
   KEY `created_by` (`created_by`),
   KEY `idx_po_date` (`order_date`),
-  CONSTRAINT `1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_po_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -171,9 +171,9 @@ CREATE TABLE IF NOT EXISTS `repair_logs` (
   KEY `actor_id` (`actor_id`),
   KEY `idx_log_repair` (`repair_id`),
   KEY `idx_log_date` (`created_at`),
-  CONSTRAINT `1` FOREIGN KEY (`repair_id`) REFERENCES `repairs` (`repair_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `2` FOREIGN KEY (`status_id`) REFERENCES `repair_statuses` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `3` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_repair_logs_repair` FOREIGN KEY (`repair_id`) REFERENCES `repairs` (`repair_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_repair_logs_status` FOREIGN KEY (`status_id`) REFERENCES `repair_statuses` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_repair_logs_actor` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -224,11 +224,11 @@ CREATE TABLE IF NOT EXISTS `repairs` (
   KEY `idx_repair_date` (`reported_date`),
   KEY `idx_repair_dept` (`department_id`),
   KEY `idx_repair_assignee` (`assignee_id`),
-  CONSTRAINT `1` FOREIGN KEY (`status_id`) REFERENCES `repair_statuses` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `3` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `4` FOREIGN KEY (`class_type_id`) REFERENCES `class_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `5` FOREIGN KEY (`assignee_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_repairs_status` FOREIGN KEY (`status_id`) REFERENCES `repair_statuses` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_repairs_dept` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_repairs_location` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_repairs_class` FOREIGN KEY (`class_type_id`) REFERENCES `class_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_repairs_assignee` FOREIGN KEY (`assignee_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -265,7 +265,7 @@ CREATE TABLE IF NOT EXISTS `spare_parts` (
   UNIQUE KEY `uk_part_code` (`code`),
   KEY `class_type_id` (`class_type_id`),
   KEY `idx_part_active` (`is_active`),
-  CONSTRAINT `1` FOREIGN KEY (`class_type_id`) REFERENCES `class_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_spare_parts_class` FOREIGN KEY (`class_type_id`) REFERENCES `class_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -290,9 +290,9 @@ CREATE TABLE IF NOT EXISTS `stock_transactions` (
   KEY `idx_stock_part` (`spare_part_id`),
   KEY `idx_stock_date` (`transaction_date`),
   KEY `idx_stock_type` (`transaction_type`),
-  CONSTRAINT `1` FOREIGN KEY (`spare_part_id`) REFERENCES `spare_parts` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `2` FOREIGN KEY (`repair_id`) REFERENCES `repairs` (`repair_id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `3` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_stock_trans_part` FOREIGN KEY (`spare_part_id`) REFERENCES `spare_parts` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_stock_trans_repair` FOREIGN KEY (`repair_id`) REFERENCES `repairs` (`repair_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_stock_trans_user` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
@@ -318,8 +318,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `idx_user_dept` (`department_id`),
   KEY `idx_user_loc` (`location_id`),
   KEY `idx_user_status` (`status`),
-  CONSTRAINT `1` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `2` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_users_dept` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_users_loc` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Data exporting was unselected.
