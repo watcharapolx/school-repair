@@ -327,6 +327,8 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 -- Dumping structure for view school_repair.v_assets_full
 -- Creating temporary table to overcome VIEW dependency errors
+DROP VIEW IF EXISTS `v_assets_full`;
+DROP TABLE IF EXISTS `v_assets_full`;
 CREATE TABLE `v_assets_full` (
 	`id` INT(10) UNSIGNED NOT NULL,
 	`asset_no` VARCHAR(50) NOT NULL COMMENT 'เลขครุภัณฑ์ เช่น COM-3001-01' COLLATE 'utf8mb4_unicode_ci',
@@ -356,6 +358,8 @@ CREATE TABLE `v_assets_full` (
 
 -- Dumping structure for view school_repair.v_low_stock
 -- Creating temporary table to overcome VIEW dependency errors
+DROP VIEW IF EXISTS `v_low_stock`;
+DROP TABLE IF EXISTS `v_low_stock`;
 CREATE TABLE `v_low_stock` (
 	`id` INT(10) UNSIGNED NOT NULL,
 	`code` VARCHAR(1) NOT NULL COMMENT 'รหัสอะไหล่ เช่น REP-0001' COLLATE 'utf8mb4_unicode_ci',
@@ -374,6 +378,8 @@ CREATE TABLE `v_low_stock` (
 
 -- Dumping structure for view school_repair.v_repair_logs_full
 -- Creating temporary table to overcome VIEW dependency errors
+DROP VIEW IF EXISTS `v_repair_logs_full`;
+DROP TABLE IF EXISTS `v_repair_logs_full`;
 CREATE TABLE `v_repair_logs_full` (
 	`id` INT(10) UNSIGNED NOT NULL,
 	`repair_id` VARCHAR(1) NOT NULL COLLATE 'utf8mb4_unicode_ci',
@@ -389,6 +395,8 @@ CREATE TABLE `v_repair_logs_full` (
 
 -- Dumping structure for view school_repair.v_repair_summary
 -- Creating temporary table to overcome VIEW dependency errors
+DROP VIEW IF EXISTS `v_repair_summary`;
+DROP TABLE IF EXISTS `v_repair_summary`;
 CREATE TABLE `v_repair_summary` (
 	`status_id` INT(10) UNSIGNED NOT NULL,
 	`status_name` VARCHAR(1) NOT NULL COLLATE 'utf8mb4_unicode_ci',
@@ -399,6 +407,8 @@ CREATE TABLE `v_repair_summary` (
 
 -- Dumping structure for view school_repair.v_repairs_full
 -- Creating temporary table to overcome VIEW dependency errors
+DROP VIEW IF EXISTS `v_repairs_full`;
+DROP TABLE IF EXISTS `v_repairs_full`;
 CREATE TABLE `v_repairs_full` (
 	`repair_id` VARCHAR(1) NOT NULL COMMENT 'เลขที่ใบแจ้งซ่อม เช่น RP6800001' COLLATE 'utf8mb4_unicode_ci',
 	`status_id` INT(10) UNSIGNED NOT NULL,
@@ -431,6 +441,8 @@ CREATE TABLE `v_repairs_full` (
 
 -- Dumping structure for view school_repair.v_stock_balance
 -- Creating temporary table to overcome VIEW dependency errors
+DROP VIEW IF EXISTS `v_stock_balance`;
+DROP TABLE IF EXISTS `v_stock_balance`;
 CREATE TABLE `v_stock_balance` (
 	`id` INT(10) UNSIGNED NOT NULL,
 	`code` VARCHAR(1) NOT NULL COMMENT 'รหัสอะไหล่ เช่น REP-0001' COLLATE 'utf8mb4_unicode_ci',
