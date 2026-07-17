@@ -457,8 +457,7 @@ FROM assets a
 LEFT JOIN class_types ct ON a.class_type_id = ct.id
 LEFT JOIN locations l ON a.location_id = l.id
 LEFT JOIN departments d ON l.department_id = d.id
-LEFT JOIN users u ON a.custodian_user_id = u.id; 
-;
+LEFT JOIN users u ON a.custodian_user_id = u.id;
 
 -- Removing temporary table and create final VIEW structure
 DROP TABLE IF EXISTS `v_low_stock`;
@@ -467,8 +466,7 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_low_stock` AS SELECT
   ct.name AS class_type_name
 FROM spare_parts sp
 LEFT JOIN class_types ct ON sp.class_type_id = ct.id
-WHERE sp.quantity <= sp.min_stock AND sp.is_active = TRUE; 
-;
+WHERE sp.quantity <= sp.min_stock AND sp.is_active = TRUE;
 
 -- Removing temporary table and create final VIEW structure
 DROP TABLE IF EXISTS `v_repair_logs_full`;
@@ -478,8 +476,7 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_repair_logs_full` AS SEL
   r.reporter_name
 FROM repair_logs rl
 JOIN repair_statuses rs ON rl.status_id = rs.id
-JOIN repairs r ON rl.repair_id = r.repair_id; 
-;
+JOIN repairs r ON rl.repair_id = r.repair_id;
 
 -- Removing temporary table and create final VIEW structure
 DROP TABLE IF EXISTS `v_repair_summary`;
@@ -492,8 +489,7 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_repair_summary` AS SELEC
 FROM repair_statuses rs
 LEFT JOIN repairs r ON rs.id = r.status_id
 GROUP BY rs.id, rs.name, rs.color_code
-ORDER BY rs.display_order; 
-;
+ORDER BY rs.display_order;
 
 -- Removing temporary table and create final VIEW structure
 DROP TABLE IF EXISTS `v_repairs_full`;
@@ -510,8 +506,7 @@ LEFT JOIN repair_statuses rs ON r.status_id = rs.id
 LEFT JOIN departments d ON r.department_id = d.id
 LEFT JOIN locations l ON r.location_id = l.id
 LEFT JOIN class_types ct ON r.class_type_id = ct.id
-LEFT JOIN users u ON r.assignee_id = u.id; 
-;
+LEFT JOIN users u ON r.assignee_id = u.id;
 
 -- Removing temporary table and create final VIEW structure
 DROP TABLE IF EXISTS `v_stock_balance`;
