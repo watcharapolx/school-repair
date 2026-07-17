@@ -13,8 +13,10 @@ const helmet = require('helmet');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const MySQLStore = require('express-mysql-session')(session);
 
 const app = express();
+app.set('trust proxy', 1);
 
 // ─── Dynamic Port (แก้ปัญหา EADDRINUSE) ───
 const PORT = parseInt(process.env.PORT, 10) || 3000;
@@ -39,6 +41,8 @@ const db = mysql.createPool({
   queueLimit: 0,
   timezone: '+07:00'
 });
+
+const sessionStore = new MySQLStore({}, db);
 
 // ─── ทดสอบเชื่อมต่อ Database ───
 async function testDB() {
@@ -66,6 +70,7 @@ app.use(express.urlencoded({ extended: true }));
 // ─── Session ───
 app.use(session({
   secret: process.env.SESSION_SECRET || 'default-secret-change-me',
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
