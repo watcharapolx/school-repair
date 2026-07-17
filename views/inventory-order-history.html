@@ -1,0 +1,121 @@
+<div class="container-fluid">
+  <!-- Table Card -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+      <span class="fw-semibold text-dark"><i class="bi bi-clock-history me-2 text-primary"></i>ประวัติรายการสั่งซื้ออุปกรณ์</span>
+      <div class="d-flex gap-2">
+        <input type="text" class="form-control form-control-sm" id="search-history" placeholder="ค้นหารายการ..." style="width: 200px;">
+        <button class="btn btn-sm btn-success" id="btn-export-history"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-3">ลำดับ</th>
+              <th>เลขที่สั่งซื้อ</th>
+              <th>วันที่สั่งซื้อ</th>
+              <th>รหัส</th>
+              <th>ชื่ออุปกรณ์</th>
+              <th>จำนวน</th>
+              <th>ราคาต่อหน่วย</th>
+              <th>ราคารวม</th>
+              <th class="pe-3 text-end">PDF</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center p-3 border-top">
+        <span class="text-muted" style="font-size: 0.85rem;" id="history-info">แสดง 0 รายการ</span>
+        <span class="fw-bold text-danger" id="history-total-cost">ค่าใช้จ่ายรวมทั้งหมด: 0 บาท</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let history = [];
+
+  function fetchHistory() {
+    App.API.get('/purchase-orders')
+      .done(function(res) {
+        if (!res.success) return;
+        history = res.data;
+        renderHistoryTable();
+      })
+      .fail(function(err) {
+        console.error('Error fetching order history:', err);
+      });
+  }
+
+  function renderHistoryTable() {
+    const searchVal = $('#search-history').val().toLowerCase();
+
+    let filtered = history;
+    if (searchVal) {
+      filtered = filtered.filter(h => 
+        h.orderNo.toLowerCase().includes(searchVal) ||
+        h.partName.toLowerCase().includes(searchVal) ||
+        h.partId.toLowerCase().includes(searchVal)
+      );
+    }
+
+    if (filtered.length === 0) {
+      $('#history-tbody').html('<tr><td colspan="9" class="text-center py-5 text-muted">ไม่พบประวัติการสั่งซื้อ</td></tr>');
+      $('#history-info').text('แสดง 0 รายการ');
+      $('#history-total-cost').text('ค่าใช้จ่ายรวมทั้งหมด: 0 บาท');
+      return;
+    }
+
+    let totalVal = 0;
+    const rows = filtered.map((h, idx) => {
+      totalVal += parseFloat(h.totalPrice || 0);
+
+      return `
+        <tr>
+          <td class="ps-3 text-muted">${idx + 1}</td>
+          <td class="fw-semibold text-primary">${h.orderNo}</td>
+          <td>${h.date}</td>
+          <td class="fw-semibold text-secondary" style="font-size:0.85rem;">${h.partId}</td>
+          <td class="fw-semibold">${h.partName}</td>
+          <td>${h.qty}</td>
+          <td><span class="text-success"><i class="bi bi-cash-stack me-1"></i></span>${h.unitPrice.toLocaleString('th-TH')}</td>
+          <td class="fw-bold"><span class="text-success"><i class="bi bi-cash-stack me-1"></i></span>${h.totalPrice.toLocaleString('th-TH')}</td>
+          <td class="pe-3 text-end">
+            <button class="btn btn-sm btn-danger text-white py-1 px-2" style="font-size:0.75rem;" onclick="alert('ดาวน์โหลด PDF ของใบสั่งซื้อ ${h.orderNo}')">
+              ใบสั่งซื้อ
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $('#history-tbody').html(rows);
+    $('#history-info').text(`แสดงทั้งหมด 1 ถึง ${filtered.length} จาก ${filtered.length} รายการ`);
+    $('#history-total-cost').text(`ค่าใช้จ่ายรวมทั้งหมด: ${totalVal.toLocaleString('th-TH')} บาท`);
+  }
+
+  // Excel export
+  $('#btn-export-history').on('click', function() {
+    let csvContent = "\uFEFF";
+    csvContent += "ลำดับ,เลขที่สั่งซื้อ,วันที่สั่งซื้อ,รหัส,ชื่ออุปกรณ์,จำนวน,ราคาต่อหน่วย,ราคารวม\n";
+    history.forEach((h, idx) => {
+      csvContent += `${idx + 1},${h.orderNo},${h.date},${h.partId},${h.partName},${h.qty},${h.unitPrice},${h.totalPrice}\n`;
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "inventory_order_history.csv";
+    link.click();
+  });
+
+  $('#search-history').on('input', renderHistoryTable);
+
+  fetchHistory();
+})();
+</script>

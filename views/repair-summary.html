@@ -1,0 +1,205 @@
+<div class="container-fluid">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <h4 class="fw-bold mb-0">
+      <i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>สรุปงานแจ้งซ่อม
+    </h4>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label fw-semibold" style="font-size: 0.85rem;">ค้นหาด่วน</label>
+          <input type="text" class="form-control" id="summary-search" placeholder="เลขที่, รายละเอียด...">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold" style="font-size: 0.85rem;">จากวันที่</label>
+          <input type="date" class="form-control" id="summary-from-date">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold" style="font-size: 0.85rem;">ถึงวันที่</label>
+          <input type="date" class="form-control" id="summary-to-date">
+        </div>
+        <div class="col-12 col-md-5 d-flex gap-2">
+          <button type="button" class="btn btn-primary flex-grow-1" id="btn-search-summary">
+            <i class="bi bi-search me-1"></i> ค้นหา
+          </button>
+          <button type="button" class="btn btn-success" id="btn-export-excel">
+            <i class="bi bi-file-earmark-excel me-1"></i> Excel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Table Card -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle" id="summary-table">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">เลขที่</th>
+              <th>สถานะ</th>
+              <th>สถานที่</th>
+              <th>ประเภท</th>
+              <th>เลขครุภัณฑ์</th>
+              <th>รายละเอียด</th>
+              <th>ผู้รับงาน</th>
+              <th>ภาพประกอบ</th>
+              <th>ปัญหา</th>
+              <th>รายละเอียดการแก้ไข</th>
+              <th>ค่าใช้จ่าย (บาท)</th>
+              <th>วันที่เสร็จสิ้น</th>
+              <th class="pe-4 text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody id="summary-tbody">
+            <tr><td colspan="13" class="text-center py-5 text-muted">กำลังโหลดข้อมูล...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center p-3 border-top">
+        <span class="text-muted" style="font-size: 0.85rem;" id="summary-total-info">แสดง 0 รายการ</span>
+        <span class="fw-bold text-success" id="summary-total-cost">รวมค่าใช้จ่ายทั้งหมด: 0.00 บาท</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let repairs = [];
+
+  function fetchSummaryList() {
+    App.API.getRepairs({ limit: 500 })
+      .done(function(res) {
+        if (!res.success) return;
+        // Filter only terminal/completed statuses (4: ซ่อมสำเร็จ, 5: ซ่อมไม่สำเร็จ, 7: ส่งซ่อมภายนอก)
+        repairs = res.data.filter(r => [4, 5, 7].includes(r.status_id));
+        renderSummaryTable();
+      })
+      .fail(function(err) {
+        console.error('Error loading summary repairs:', err);
+      });
+  }
+
+  function renderSummaryTable() {
+    const searchVal = $('#summary-search').val().toLowerCase();
+    const fromDate = $('#summary-from-date').val();
+    const toDate = $('#summary-to-date').val();
+
+    let filtered = repairs.filter(r => {
+      // Date filter based on received_date or reported_date
+      const rDate = r.received_date ? r.received_date.split('T')[0] : '';
+      if (fromDate && rDate < fromDate) return false;
+      if (toDate && rDate > toDate) return false;
+
+      // Text search filter
+      if (searchVal) {
+        return (
+          r.repair_id.toLowerCase().includes(searchVal) ||
+          r.reporter_name.toLowerCase().includes(searchVal) ||
+          (r.detail && r.detail.toLowerCase().includes(searchVal)) ||
+          (r.problem && r.problem.toLowerCase().includes(searchVal)) ||
+          (r.repair_list && r.repair_list.toLowerCase().includes(searchVal))
+        );
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      $('#summary-tbody').html('<tr><td colspan="13" class="text-center py-5 text-muted">ไม่พบข้อมูลตามตัวเลือก</td></tr>');
+      $('#summary-total-info').text('แสดง 0 รายการ');
+      $('#summary-total-cost').text('รวมค่าใช้จ่ายทั้งหมด: 0.00 บาท');
+      return;
+    }
+
+    let totalCost = 0;
+    const rows = filtered.map(r => {
+      const cost = parseFloat(r.cost || 0);
+      totalCost += cost;
+
+      const imgThumb = r.img1_url ? 
+        `<a href="${r.img1_url}" target="_blank"><img src="${r.img1_url}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;"></a>` : '-';
+
+      const dateStr = r.received_date ? App.Utils.formatDateThai(r.received_date) : '-';
+
+      return `
+        <tr>
+          <td class="ps-4 fw-semibold text-primary">${r.repair_id}</td>
+          <td>${App.Utils.getStatusBadge(r.status_id)}</td>
+          <td style="font-size: 0.85rem;">${r.location_name || '-'}</td>
+          <td style="font-size: 0.85rem;">${r.class_type_name || '-'}</td>
+          <td style="font-size: 0.85rem;">${r.asset_no || '-'}</td>
+          <td style="font-size: 0.85rem; max-width: 150px;" class="text-truncate" title="${r.detail}">${r.detail}</td>
+          <td style="font-size: 0.85rem;">${r.assignee_name || '-'}</td>
+          <td>${imgThumb}</td>
+          <td style="font-size: 0.85rem;">${r.problem || '-'}</td>
+          <td style="font-size: 0.85rem;">${r.repair_list || '-'}</td>
+          <td class="fw-bold text-end" style="font-size: 0.9rem;">${cost.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</td>
+          <td style="font-size: 0.85rem;">${dateStr}</td>
+          <td class="pe-4 text-end">
+            <a href="#repairs/${r.repair_id}" class="btn btn-sm btn-danger text-white">
+              <i class="bi bi-file-pdf"></i> สรุปรายการ
+            </a>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $('#summary-tbody').html(rows);
+    $('#summary-total-info').text(`แสดง ${filtered.length} รายการ`);
+    $('#summary-total-cost').text(`รวมค่าใช้จ่ายทั้งหมด: ${totalCost.toLocaleString('th-TH', { minimumFractionDigits: 2 })} บาท`);
+  }
+
+  // Export to Excel / CSV
+  $('#btn-export-excel').on('click', function() {
+    if (repairs.length === 0) {
+      App.Utils.showToast('ไม่มีข้อมูลการแจ้งซ่อมสำหรับจัดทำรายงาน', 'warning');
+      return;
+    }
+    
+    // Prepare CSV Content
+    let csvContent = "\uFEFF"; // UTF-8 BOM for Excel Thai language support
+    csvContent += "เลขที่ใบแจ้งซ่อม,สถานะ,สถานที่,ประเภทครุภัณฑ์,เลขครุภัณฑ์,รายละเอียดปัญหา,ผู้รับงาน,ปัญหาที่พบ,รายละเอียดการแก้ไข,ค่าใช้จ่าย(บาท),วันที่แล้วเสร็จ\n";
+    
+    repairs.forEach(r => {
+      const row = [
+        r.repair_id,
+        r.status_name || '',
+        r.location_name || '',
+        r.class_type_name || '',
+        r.asset_no || '',
+        `"${(r.detail || '').replace(/"/g, '""')}"`,
+        r.assignee_name || '',
+        `"${(r.problem || '').replace(/"/g, '""')}"`,
+        `"${(r.repair_list || '').replace(/"/g, '""')}"`,
+        r.cost || 0,
+        r.received_date ? r.received_date.split('T')[0] : ''
+      ];
+      csvContent += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `repair_summary_report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    App.Utils.showToast('ส่งออกรายงาน Excel สำเร็จแล้ว', 'success');
+  });
+
+  // Events
+  $('#btn-search-summary').on('click', renderSummaryTable);
+  $('#summary-search').on('input', renderSummaryTable);
+
+  // Initial fetch
+  fetchSummaryList();
+})();
+</script>

@@ -1,0 +1,748 @@
+<div class="container-fluid">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <h4 class="fw-bold mb-0">
+      <i class="bi bi-pc-display text-primary me-2"></i>ครุภัณฑ์
+    </h4>
+  </div>
+
+  <!-- Filter -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-2 align-items-center">
+        <div class="col-12 col-md-3">
+          <select class="form-select" id="assets-class-filter">
+            <option value="">เลือกประเภทครุภัณฑ์</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <select class="form-select" id="assets-location-filter">
+            <option value="">ทุกห้อง/สถานที่</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <input type="text" class="form-control" id="assets-search" placeholder="ค้นหาเลขครุภัณฑ์ / ชื่อ...">
+        </div>
+        <div class="col-12 col-md-3 text-end d-flex gap-2 justify-content-end">
+          <button class="btn btn-outline-secondary" id="btn-clear-filters" title="ล้างตัวกรอง">
+            <i class="bi bi-x-circle me-1"></i>ล้าง
+          </button>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-add-asset">
+            <i class="bi bi-plus-lg me-1"></i>เพิ่มครุภัณฑ์
+          </button>
+          <button class="btn btn-success" id="btn-export-assets">
+            <i class="bi bi-file-earmark-excel me-1"></i>Excel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assets Table Card -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">ลำดับ</th>
+              <th>ภาพ</th>
+              <th>ID</th>
+              <th>วันที่ได้รับ</th>
+              <th>เลขครุภัณฑ์</th>
+              <th>ประเภท</th>
+              <th>รายการ</th>
+              <th>ห้อง/สถานที่</th>
+              <th>ราคา</th>
+              <th>ทะเบียน</th>
+              <th>QrCode</th>
+              <th>สถานะ</th>
+              <th class="pe-4 text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody id="assets-tbody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-end p-3 border-top">
+        <span class="fw-bold text-success" id="assets-total-cost">มูลค่ารวมทั้งหมด: 0 บาท</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Asset -->
+<div class="modal fade" id="modal-add-asset" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>เพิ่มครุภัณฑ์</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-asset-form">
+          <input type="hidden" id="edit-asset-id">
+          <div class="mb-3" id="ref-spare-part-container">
+            <label class="form-label fw-semibold text-primary"><i class="bi bi-link-45deg me-1"></i>ดึงข้อมูลอ้างอิงจากอะไหล่ (ดึงข้อมูลอัตโนมัติ)</label>
+            <select class="form-select border-primary" id="ref-spare-part">
+              <option value="">-- ไม่ดึงข้อมูล/เลือกเพื่อกรอกข้อมูลอัตโนมัติ --</option>
+            </select>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">เลขครุภัณฑ์ <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="new-asset-no" placeholder="เช่น 1, 2, 3" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">ชื่อรายการครุภัณฑ์ <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="new-asset-name" placeholder="เช่น เครื่องคอมพิวเตอร์" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">ประเภทครุภัณฑ์ <span class="text-danger">*</span></label>
+              <select class="form-select" id="new-asset-class" required>
+                <option value="">เลือกประเภทครุภัณฑ์</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">ราคาต่อหน่วย (บาท)</label>
+              <input type="number" class="form-control" id="new-asset-price" min="0" step="0.01" placeholder="0.00" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">ยี่ห้อและรุ่น</label>
+              <input type="text" class="form-control" id="new-asset-brand" placeholder="เช่น Dell OptiPlex 3080">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">หมายเลขเครื่อง (S/N)</label>
+              <input type="text" class="form-control" id="new-asset-serial" placeholder="เช่น S/N 123456789">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">ห้องจัดเก็บ/สถานที่ <span class="text-danger">*</span></label>
+              <select class="form-select" id="new-asset-location" required>
+                <option value="">เลือกสถานที่ห้องเรียน</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">ผู้รับผิดชอบดูแล <span class="text-danger">*</span></label>
+              <select class="form-select" id="new-asset-custodian-user" required>
+                <option value="">เลือกอาจารย์ผู้ดูแล</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">วันที่ได้รับ <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" id="new-asset-date" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">วันที่สิ้นสุดการรับประกัน</label>
+              <input type="date" class="form-control" id="new-asset-warranty">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">แหล่งงบประมาณ</label>
+            <input type="text" class="form-control" id="new-asset-funding" placeholder="เช่น เงินงบประมาณแผ่นดิน, เงินรายได้สถานศึกษา">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">ข้อมูลผู้จัดจำหน่าย</label>
+            <input type="text" class="form-control" id="new-asset-supplier" placeholder="เช่น บริษัท พาวเวอร์บาย จำกัด (02-999-9999)">
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">ทะเบียน (ถ้ามี)</label>
+              <input type="text" class="form-control" id="new-asset-register" placeholder="ทะเบียนคุมทรัพย์สิน">
+            </div>
+            <div class="col-md-6 mb-3" id="asset-status-container">
+              <label class="form-label fw-semibold">สถานะการใช้งาน</label>
+              <select class="form-select" id="new-asset-status">
+                <option value="พร้อมใช้งาน">🟢 ใช้งานปกติ (Active)</option>
+                <option value="ไม่พร้อมใช้งาน">🟡 ชำรุด/รอซ่อม (Pending Repair)</option>
+                <option value="ส่งซ่อม">🔴 กำลังซ่อมแซม (Under Repair)</option>
+                <option value="จำหน่าย">❌ แทงจำหน่าย (Disposed)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">รูปภาพครุภัณฑ์</label>
+            <input type="file" class="form-control" id="new-asset-image" accept="image/*">
+            <div id="new-asset-image-preview" class="mt-2 text-center"></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button type="button" class="btn btn-primary" id="btn-save-asset">บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: View Asset Details -->
+<div class="modal fade" id="modal-view-asset" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold text-primary"><i class="bi bi-info-circle me-2"></i>รายละเอียดครุภัณฑ์</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-4">
+          <div class="col-md-5 text-center border-end">
+            <div class="mb-3">
+              <img id="view-asset-image" src="" class="rounded shadow-sm img-thumbnail" style="max-height: 220px; max-width: 100%; object-fit: cover;" onerror="this.src='https://lh3.googleusercontent.com/d/1dT178EZOE1FcEEZQqj2U1zp4O8vn0VuC'">
+            </div>
+            <h4 class="fw-bold mb-1" id="view-asset-name-title"></h4>
+            <p class="text-muted mb-2" id="view-asset-no-title" style="font-size: 0.95rem;"></p>
+            <span id="view-asset-status-badge" class="badge"></span>
+            
+            <div class="mt-4 pt-3 border-top text-center">
+              <span class="text-muted d-block small mb-2">QR Code สำหรับแจ้งซ่อม</span>
+              <img id="view-asset-qr" src="" style="width: 120px; height: 120px;" class="img-thumbnail">
+            </div>
+          </div>
+          <div class="col-md-7">
+            <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3"><i class="bi bi-card-text me-2"></i>ข้อมูลครุภัณฑ์</h5>
+            <div class="row g-3">
+              <div class="col-6">
+                <span class="text-muted d-block small">ประเภทครุภัณฑ์</span>
+                <strong id="view-asset-category" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">ยี่ห้อ / รุ่น</span>
+                <strong id="view-asset-brand" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">หมายเลขเครื่อง (S/N)</span>
+                <strong id="view-asset-serial" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">เลขทะเบียนครุภัณฑ์</span>
+                <strong id="view-asset-register" class="text-dark">-</strong>
+              </div>
+            </div>
+
+            <h5 class="fw-bold text-secondary border-bottom pb-2 mt-4 mb-3"><i class="bi bi-geo-alt me-2"></i>สถานที่และผู้รับดูแล</h5>
+            <div class="row g-3">
+              <div class="col-6">
+                <span class="text-muted d-block small">อาคาร / สถานที่</span>
+                <strong id="view-asset-location" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">ห้องจัดเก็บ</span>
+                <strong id="view-asset-room" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">หน่วยงานรับผิดชอบ</span>
+                <strong id="view-asset-department" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">ผู้ดูแลครุภัณฑ์</span>
+                <strong id="view-asset-custodian" class="text-dark">-</strong>
+              </div>
+            </div>
+
+            <h5 class="fw-bold text-secondary border-bottom pb-2 mt-4 mb-3"><i class="bi bi-currency-dollar me-2"></i>การเงินและประกัน</h5>
+            <div class="row g-3">
+              <div class="col-6">
+                <span class="text-muted d-block small">วันที่ได้รับครุภัณฑ์</span>
+                <strong id="view-asset-date" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">ราคาซื้อ (บาท)</span>
+                <strong id="view-asset-price" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">แหล่งงบประมาณ</span>
+                <strong id="view-asset-funding" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">สถานะการรับประกัน</span>
+                <div class="d-flex align-items-center gap-1">
+                  <span id="view-asset-warranty-status" class="badge"></span>
+                </div>
+                <span class="d-block text-secondary small mt-1" id="view-asset-warranty-date"></span>
+              </div>
+              <div class="col-12">
+                <span class="text-muted d-block small">ข้อมูลผู้จัดจำหน่าย / ส่งซ่อม</span>
+                <span id="view-asset-supplier" class="text-dark">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light border-0">
+        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">ปิด</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let assets = [];
+  let categories = [];
+  let spareParts = [];
+  const assetModal = new bootstrap.Modal(document.getElementById('modal-add-asset'));
+
+  // Load categories and then fetch assets
+  function initAssets() {
+    // Fetch locations for the filter dropdown
+    App.API.get('/locations').done(res => {
+      if (res.success) {
+        $('#assets-location-filter').html('<option value="">ทุกห้อง/สถานที่</option>');
+        res.data.forEach(l => {
+          $('#assets-location-filter').append(`<option value="${l.id}">${l.name}</option>`);
+        });
+      }
+    });
+    // Also populate the add-form location dropdown
+    App.API.get('/locations').done(res => {
+      if (res.success) {
+        $('#new-asset-location').html('<option value="">เลือกสถานที่ห้องเรียน</option>');
+        res.data.forEach(l => {
+          $('#new-asset-location').append(`<option value="${l.id}">${l.name}</option>`);
+        });
+      }
+    });
+
+    // Fetch users
+    App.API.get('/users').done(res => {
+      if (res.success) {
+        $('#new-asset-custodian-user').html('<option value="">เลือกอาจารย์ผู้ดูแล</option>');
+        res.data.forEach(u => {
+          $('#new-asset-custodian-user').append(`<option value="${u.id}">${u.fullname} (${u.username})</option>`);
+        });
+      }
+    });
+
+    App.API.get('/class-types')
+      .done(res => {
+        if (res.success) {
+          categories = res.data;
+          $('#assets-class-filter').html('<option value="">เลือกประเภทครุภัณฑ์</option>');
+          $('#new-asset-class').html('<option value="">เลือกประเภทครุภัณฑ์</option>');
+          categories.forEach(c => {
+            $('#assets-class-filter').append(`<option value="${c.id}">${c.name}</option>`);
+            $('#new-asset-class').append(`<option value="${c.id}">${c.name}</option>`);
+          });
+        }
+
+        // Fetch spare parts to reference
+        App.API.get('/spare-parts', { limit: 200 })
+          .done(res2 => {
+            if (res2.success) {
+              spareParts = res2.data;
+              $('#ref-spare-part').html('<option value="">-- ไม่ดึงข้อมูล/เลือกเพื่อกรอกข้อมูลอัตโนมัติ --</option>');
+              spareParts.forEach(p => {
+                $('#ref-spare-part').append(`<option value="${p.id}">${p.code} - ${p.name}</option>`);
+              });
+            }
+          });
+
+        fetchAssets();
+      });
+  }
+
+  function fetchAssets() {
+    const searchVal = $('#assets-search').val().trim();
+    const classVal = $('#assets-class-filter').val();
+    const locationVal = $('#assets-location-filter').val();
+    const query = { limit: 1000 };
+    if (searchVal) query.search = searchVal;
+    if (classVal) query.class_type_id = classVal;
+    if (locationVal) query.location_id = locationVal;
+
+    App.API.get('/assets', query)
+      .done(res => {
+        if (res.success) {
+          assets = res.data;
+          renderAssetsTable();
+        }
+      });
+  }
+
+  window.copyQrLink = function(link) {
+    if (!link) {
+      App.Utils.showToast('ไม่มีลิงก์ QR Code', 'warning');
+      return;
+    }
+    navigator.clipboard.writeText(link);
+    App.Utils.showToast('คัดลอกลิงก์ QR Code เรียบร้อยแล้ว', 'success');
+  };
+
+  window.toggleAssetStatus = function(assetId, element) {
+    const isChecked = $(element).is(':checked');
+    const newStatus = isChecked ? 'พร้อมใช้งาน' : 'ไม่พร้อมใช้งาน';
+    
+    // Find asset
+    const a = assets.find(x => x.id === assetId);
+    if (!a) return;
+
+    App.Utils.showLoader(true);
+    App.API.put(`/assets/${assetId}`, {
+      asset_no: a.asset_no,
+      class_type_id: a.class_type_id,
+      name: a.name,
+      price: a.price,
+      register_no: a.register_no,
+      acquired_date: a.acquired_date ? a.acquired_date.split('T')[0] : '',
+      status: newStatus
+    })
+    .done(res => {
+      if (res.success) {
+        App.Utils.showToast(`เปลี่ยนสถานะเป็น: ${newStatus}`, 'success');
+        fetchAssets();
+      } else {
+        App.Utils.showToast(res.message || 'เปลี่ยนสถานะล้มเหลว', 'danger');
+        $(element).prop('checked', !isChecked);
+      }
+    })
+    .fail(() => {
+      App.Utils.showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'danger');
+      $(element).prop('checked', !isChecked);
+    })
+    .always(() => App.Utils.showLoader(false));
+  };
+
+  window.editAsset = function(assetId) {
+    const a = assets.find(x => x.id === assetId);
+    if (!a) return;
+
+    $('#modal-add-asset .modal-title').html('<i class="bi bi-pencil-square me-2"></i>แก้ไขข้อมูลครุภัณฑ์');
+    $('#edit-asset-id').val(a.id);
+    $('#ref-spare-part-container').hide(); // Hide reference dropdown when editing
+    $('#new-asset-no').val(a.asset_no);
+    $('#new-asset-name').val(a.name);
+    $('#new-asset-class').val(a.class_type_id || '');
+    $('#new-asset-price').val(a.price);
+    $('#new-asset-register').val(a.register_no || '');
+    if (a.acquired_date) {
+      $('#new-asset-date').val(a.acquired_date.split('T')[0]);
+    } else {
+      $('#new-asset-date').val('');
+    }
+    
+    // New fields
+    $('#new-asset-brand').val(a.brand || '');
+    $('#new-asset-serial').val(a.serial_number || '');
+    $('#new-asset-location').val(a.location_id || '');
+    $('#new-asset-custodian-user').val(a.custodian_user_id || '');
+    if (a.warranty_expire_date) {
+      $('#new-asset-warranty').val(a.warranty_expire_date.split('T')[0]);
+    } else {
+      $('#new-asset-warranty').val('');
+    }
+    $('#new-asset-funding').val(a.funding_source || '');
+    $('#new-asset-supplier').val(a.supplier_info || '');
+    $('#new-asset-status').val(a.status || 'พร้อมใช้งาน');
+    
+    if (a.image_url) {
+      $('#new-asset-image-preview').html(`<img src="${a.image_url}" class="rounded shadow-sm" style="max-height: 80px;">`);
+    } else {
+      $('#new-asset-image-preview').html('ไม่มีรูปภาพเดิม');
+    }
+    $('#new-asset-image').val('');
+
+    assetModal.show();
+  };
+
+  window.deleteAsset = function(assetId) {
+    if (!confirm('คุณต้องการลบครุภัณฑ์นี้ใช่หรือไม่?')) return;
+    App.Utils.showLoader(true);
+    App.API.del(`/assets/${assetId}`)
+      .done(res => {
+        if (res.success) {
+          App.Utils.showToast('ลบครุภัณฑ์สำเร็จ', 'success');
+          fetchAssets();
+        } else {
+          App.Utils.showToast(res.message || 'ลบล้มเหลว', 'danger');
+        }
+      })
+      .fail(() => App.Utils.showToast('เกิดข้อผิดพลาดในการลบ', 'danger'))
+      .always(() => App.Utils.showLoader(false));
+  };
+
+  function renderAssetsTable() {
+    const filtered = assets;
+
+    if (filtered.length === 0) {
+      $('#assets-tbody').html('<tr><td colspan="13" class="text-center py-5 text-muted"><i class="bi bi-inbox me-2"></i>ไม่พบครุภัณฑ์ที่ตรงกับเงื่อนไขที่เลือก</td></tr>');
+      $('#assets-total-cost').text('มูลค่ารวมทั้งหมด: 0 บาท');
+      return;
+    }
+
+    let totalVal = 0;
+    const rows = filtered.map((a, idx) => {
+      totalVal += parseFloat(a.price || 0);
+      const dateStr = a.acquired_date ? App.Utils.formatDateThai(a.acquired_date) : '-';
+      const qrUrl = a.qr_code_url || '';
+      let statusBadge = '';
+      if (a.status === 'พร้อมใช้งาน') {
+        statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>ใช้งานปกติ</span>';
+      } else if (a.status === 'ไม่พร้อมใช้งาน') {
+        statusBadge = '<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>ชำรุด/รอซ่อม</span>';
+      } else if (a.status === 'ส่งซ่อม') {
+        statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-tools me-1"></i>กำลังซ่อมแซม</span>';
+      } else if (a.status === 'จำหน่าย') {
+        statusBadge = '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i>แทงจำหน่าย</span>';
+      } else {
+        statusBadge = `<span class="badge bg-light text-dark px-2 py-1">${a.status}</span>`;
+      }
+
+      return `
+        <tr>
+          <td class="ps-4 text-muted">${idx + 1}</td>
+          <td><img src="${a.image_url || '/public/images/no-image.png'}" class="rounded shadow-sm" style="width: 38px; height: 38px; object-fit: cover;" onerror="this.src='https://lh3.googleusercontent.com/d/1dT178EZOE1FcEEZQqj2U1zp4O8vn0VuC'"></td>
+          <td class="fw-semibold text-secondary" style="font-size:0.78rem;">${a.id}</td>
+          <td style="font-size:0.82rem;">${dateStr}</td>
+          <td class="fw-semibold">${a.asset_no}</td>
+          <td style="font-size: 0.82rem;" class="text-muted">${a.class_type_name || '-'}</td>
+          <td class="fw-semibold">${a.name}</td>
+          <td style="font-size:0.82rem;">${a.location_name || '-'}</td>
+          <td>${parseFloat(a.price || 0).toLocaleString('th-TH')}</td>
+          <td style="font-size:0.82rem;">${a.register_no || '-'}</td>
+          <td>
+            <button class="btn btn-sm btn-purple text-white py-1 px-2" style="font-size: 0.75rem;" onclick="copyQrLink('${qrUrl}')">
+              คัดลอกลิงค์
+            </button>
+          </td>
+          <td>${statusBadge}</td>
+          <td class="pe-4 text-end">
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-info text-white btn-view-asset" data-id="${a.id}"><i class="bi bi-eye"></i></button>
+              <button class="btn btn-primary" onclick="editAsset(${a.id})"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-danger" onclick="deleteAsset(${a.id})"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $('#assets-tbody').html(rows);
+    $('#assets-total-cost').text(`มูลค่ารวมทั้งหมด: ${totalVal.toLocaleString('th-TH')} บาท`);
+  }
+
+  // Clear modal fields when opening for addition
+  $('[data-bs-target="#modal-add-asset"]').on('click', function() {
+    $('#modal-add-asset .modal-title').html('<i class="bi bi-plus-circle me-2"></i>เพิ่มครุภัณฑ์');
+    $('#edit-asset-id').val('');
+    $('#add-asset-form')[0].reset();
+    $('#ref-spare-part-container').show();
+    $('#ref-spare-part').val('').trigger('change');
+    $('#new-asset-image-preview').html('');
+    $('#new-asset-status').val('พร้อมใช้งาน');
+    
+    // Auto-generate next asset number
+    App.API.get('/assets/next-no')
+      .done(res => {
+        if (res.success) {
+          // Auto generate date with current date in YYYY-MM-DD
+          const today = new Date().toISOString().split('T')[0];
+          $('#new-asset-date').val(today);
+          $('#new-asset-no').val(res.nextNo);
+        }
+      });
+  });
+
+  // Save asset (Add or Edit)
+  $('#btn-save-asset').on('click', function() {
+    const editId = $('#edit-asset-id').val();
+    const no = $('#new-asset-no').val().trim();
+    const name = $('#new-asset-name').val().trim();
+    const classId = $('#new-asset-class').val();
+    const price = parseFloat($('#new-asset-price').val()) || 0;
+    const register = $('#new-asset-register').val().trim();
+    const date = $('#new-asset-date').val();
+    const imageFile = $('#new-asset-image')[0].files[0];
+
+    const brand = $('#new-asset-brand').val().trim();
+    const serial = $('#new-asset-serial').val().trim();
+    const locationId = $('#new-asset-location').val();
+    const custodianUserId = $('#new-asset-custodian-user').val();
+    const warranty = $('#new-asset-warranty').val();
+    const funding = $('#new-asset-funding').val().trim();
+    const supplier = $('#new-asset-supplier').val().trim();
+    const status = $('#new-asset-status').val() || 'พร้อมใช้งาน';
+
+    if (!no || !name || !date || !classId || !locationId || !custodianUserId) {
+      App.Utils.showToast('กรุณากรอกข้อมูลสำคัญและเลือกสถานที่/ผู้ดูแลให้ครบถ้วน', 'warning');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('asset_no', no);
+    formData.append('name', name);
+    formData.append('class_type_id', classId);
+    formData.append('price', price);
+    formData.append('register_no', register);
+    formData.append('acquired_date', date);
+    formData.append('status', status);
+    formData.append('brand', brand);
+    formData.append('serial_number', serial);
+    formData.append('location_id', locationId);
+    formData.append('custodian_user_id', custodianUserId);
+    formData.append('warranty_expire_date', warranty);
+    formData.append('funding_source', funding);
+    formData.append('supplier_info', supplier);
+    
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    const url = editId ? `/api/assets/${editId}` : '/api/assets';
+    
+    App.Utils.showLoader(true);
+    $.ajax({
+      url: url,
+      type: editId ? 'PUT' : 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(res) {
+        if (res.success) {
+          $('#modal-add-asset').modal('hide');
+          $('#add-asset-form')[0].reset();
+          App.Utils.showToast(editId ? 'แก้ไขข้อมูลครุภัณฑ์สำเร็จ' : 'เพิ่มครุภัณฑ์เรียบร้อยแล้ว', 'success');
+          fetchAssets();
+        } else {
+          App.Utils.showToast(res.message || 'บันทึกข้อมูลล้มเหลว', 'danger');
+        }
+      },
+      error: function() {
+        App.Utils.showToast('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์', 'danger');
+      },
+      complete: function() {
+        App.Utils.showLoader(false);
+      }
+    });
+  });
+
+  // Export excel
+  $('#btn-export-assets').on('click', function() {
+    let csvContent = "\uFEFF";
+    csvContent += "ลำดับ,Key,วันที่ได้รับ,เลขครุภัณฑ์,ประเภท,รายการ,ราคา,ทะเบียน,สถานะ\n";
+    assets.forEach((a, idx) => {
+      const dateStr = a.acquired_date ? a.acquired_date.split('T')[0] : '';
+      csvContent += `${idx + 1},${a.id},${dateStr},${a.asset_no},${a.class_type_name || ''},${a.name},${a.price},${a.register_no || ''},${a.status}\n`;
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "assets_list.csv";
+    link.click();
+  });
+
+  // Reference spare part change handler
+  $('#ref-spare-part').on('change', function() {
+    const pid = $(this).val();
+    if (pid) {
+      const p = spareParts.find(x => x.id == pid);
+      if (p) {
+        $('#new-asset-name').val(p.name);
+        $('#new-asset-class').val(p.class_type_id || '').trigger('change');
+        $('#new-asset-price').val(p.unit_price);
+      }
+    }
+  });
+
+  // Bind view asset details click handler
+  $(document).on('click', '.btn-view-asset', function() {
+    const assetId = $(this).data('id');
+    App.API.get(`/assets/${assetId}`)
+      .done(res => {
+        if (res.success) {
+          const a = res.data;
+          $('#view-asset-image').attr('src', a.image_url || '/public/images/no-image.png');
+          $('#view-asset-name-title').text(a.name);
+          $('#view-asset-no-title').text(`เลขครุภัณฑ์: ${a.asset_no}`);
+          
+          // Status badge
+          const statusBadge = $('#view-asset-status-badge');
+          if (a.status === 'พร้อมใช้งาน') {
+            statusBadge.text('🟢 ใช้งานปกติ').attr('class', 'badge bg-success-subtle text-success border border-success-subtle px-2 py-1');
+          } else if (a.status === 'ไม่พร้อมใช้งาน') {
+            statusBadge.text('🟡 ชำรุด/รอซ่อม').attr('class', 'badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1');
+          } else if (a.status === 'ส่งซ่อม') {
+            statusBadge.text('🔴 กำลังซ่อมแซม').attr('class', 'badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1');
+          } else if (a.status === 'จำหน่าย') {
+            statusBadge.text('❌ แทงจำหน่าย').attr('class', 'badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1');
+          }
+
+          // QR Code
+          const qrUrl = a.qr_code_url || `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(a.link_url || a.id)}&size=150x150`;
+          $('#view-asset-qr').attr('src', qrUrl);
+
+          // Basic Info
+          $('#view-asset-category').text(a.class_type_name || '-');
+          $('#view-asset-brand').text(a.brand || '-');
+          $('#view-asset-serial').text(a.serial_number || '-');
+          $('#view-asset-register').text(a.register_no || '-');
+
+          // Location
+          $('#view-asset-location').text(a.location_name || '-');
+          $('#view-asset-room').text(a.location_name || '-');
+          $('#view-asset-department').text(a.department_name || '-');
+          $('#view-asset-custodian').text(a.custodian_name || '-');
+
+          // Fin & Warranty
+          $('#view-asset-date').text(a.acquired_date ? App.Utils.formatDateThai(a.acquired_date) : '-');
+          $('#view-asset-price').text(`${parseFloat(a.price || 0).toLocaleString('th-TH')} บาท`);
+          $('#view-asset-funding').text(a.funding_source || '-');
+          $('#view-asset-supplier').text(a.supplier_info || '-');
+
+          // Warranty calculation
+          const warrantyStatus = $('#view-asset-warranty-status');
+          const warrantyDateText = $('#view-asset-warranty-date');
+          if (a.warranty_expire_date) {
+            const expireDate = new Date(a.warranty_expire_date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            expireDate.setHours(0, 0, 0, 0);
+
+            const formattedExpire = App.Utils.formatDateThai(a.warranty_expire_date);
+            warrantyDateText.text(`หมดประกัน: ${formattedExpire}`);
+
+            if (expireDate >= today) {
+              warrantyStatus.text('อยู่ในประกัน').attr('class', 'badge bg-success px-2 py-1');
+            } else {
+              warrantyStatus.text('หมดประกันแล้ว').attr('class', 'badge bg-danger px-2 py-1');
+            }
+          } else {
+            warrantyStatus.text('ไม่มีประกัน').attr('class', 'badge bg-secondary px-2 py-1');
+            warrantyDateText.text('');
+          }
+
+          $('#modal-view-asset').modal('show');
+        } else {
+          App.Utils.showToast(res.message || 'ดึงข้อมูลไม่สำเร็จ', 'danger');
+        }
+      });
+  });
+
+  $('#assets-class-filter, #assets-location-filter, #assets-search').on('input change', fetchAssets);
+
+  $('#btn-clear-filters').on('click', function() {
+    $('#assets-class-filter').val('');
+    $('#assets-location-filter').val('');
+    $('#assets-search').val('');
+    fetchAssets();
+  });
+
+  // Init
+  initAssets();
+})();
+</script>

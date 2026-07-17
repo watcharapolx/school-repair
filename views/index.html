@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบแจ้งซ่อมบำรุงในสถานศึกษา</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Modern Color Palette */
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --secondary: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --info: #0ea5e9;
+      
+      --sidebar-w: 280px;
+      --sidebar-bg: #ffffff;
+      --sidebar-text: #334155;
+      --sidebar-hover-bg: #f8fafc;
+      
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      
+      --border-color: #e2e8f0;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Sarabun', 'Noto Sans Thai', 'Tahoma', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      letter-spacing: 0.01em;
+      line-height: 1.5;
+    }
+
+    /* ─── Global Overrides ─── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color) !important;
+      border-radius: var(--radius-md) !important;
+      box-shadow: var(--shadow-sm) !important;
+      transition: box-shadow 0.2s ease-in-out;
+    }
+    .card:hover {
+      box-shadow: var(--shadow-md) !important;
+    }
+    .card-header {
+      background-color: transparent !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      padding: 1.25rem 1.5rem !important;
+    }
+    
+    .btn {
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      border-color: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+    
+    .form-control, .form-select {
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      padding: 0.6rem 1rem;
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.25);
+    }
+
+    /* ─── Login Screen ─── */
+    #login-screen {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Decorative background shapes for login */
+    #login-screen::before {
+      content: '';
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 50%;
+      height: 50%;
+      background: radial-gradient(circle, rgba(79,70,229,0.1) 0%, rgba(255,255,255,0) 70%);
+      z-index: 0;
+    }
+    #login-screen::after {
+      content: '';
+      position: absolute;
+      bottom: -10%;
+      right: -10%;
+      width: 50%;
+      height: 50%;
+      background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, rgba(255,255,255,0) 70%);
+      z-index: 0;
+    }
+
+    .login-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 440px;
+      padding: 3rem 2.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-logo {
+      height: 80px;
+      border-radius: 50%;
+      box-shadow: var(--shadow-md);
+      border: 3px solid white;
+    }
+
+    /* ─── App Shell ─── */
+    #app-shell { display: none; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      position: fixed;
+      left: 0; top: 0;
+      z-index: 1040;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--sidebar-bg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .sidebar-brand img {
+      height: 40px;
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sidebar-brand span {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.025em;
+    }
+
+    .brand-back-btn {
+      color: var(--primary);
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .brand-back-btn:hover {
+      opacity: 0.8;
+    }
+
+    .nav-section-label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 1.5rem 1.5rem 0.5rem;
+    }
+
+    .nav-item-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--sidebar-text);
+      padding: 0.8rem 1.25rem;
+      margin: 0.2rem 1rem;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      background: transparent;
+      width: calc(100% - 2rem);
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .nav-item-link:hover {
+      background: var(--sidebar-hover-bg);
+      color: var(--primary);
+      transform: translateX(4px);
+    }
+
+    /* Color buttons - Simplified and modernized */
+    .btn-nav-blue {
+      background: var(--primary) !important;
+      color: #ffffff !important;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-nav-blue:hover {
+      background: var(--primary-hover) !important;
+      transform: translateY(-1px) translateX(0) !important;
+      box-shadow: var(--shadow-md);
+    }
+    .btn-nav-purple {
+      background: #8b5cf6 !important;
+      color: #ffffff !important;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-nav-purple:hover {
+      background: #7c3aed !important;
+      transform: translateY(-1px) translateX(0) !important;
+      box-shadow: var(--shadow-md);
+    }
+    .btn-nav-green {
+      background: var(--success) !important;
+      color: #ffffff !important;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-nav-green:hover {
+      background: #059669 !important;
+      transform: translateY(-1px) translateX(0) !important;
+      box-shadow: var(--shadow-md);
+    }
+    .btn-nav-red {
+      background: var(--danger) !important;
+      color: #ffffff !important;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-nav-red:hover {
+      background: #dc2626 !important;
+      transform: translateY(-1px) translateX(0) !important;
+      box-shadow: var(--shadow-md);
+    }
+
+    .nav-item-link.active:not(.btn-nav-blue):not(.btn-nav-purple):not(.btn-nav-green) {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .nav-item-link.active:not(.btn-nav-blue):not(.btn-nav-purple):not(.btn-nav-green):hover {
+       transform: none;
+    }
+
+    .nav-item-link i { width: 24px; text-align: center; font-size: 1.15rem; }
+
+    /* Dropdown Accordion */
+    .nav-dropdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: calc(100% - 2rem);
+      padding: 0.8rem 1.25rem;
+      margin: 0.2rem 1rem;
+      border-radius: var(--radius-sm);
+      color: var(--sidebar-text);
+      font-size: 0.95rem;
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .nav-dropdown-header:hover {
+      background: var(--sidebar-hover-bg);
+      color: var(--primary);
+    }
+    .nav-dropdown-header span {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .nav-dropdown-header span i {
+      width: 24px;
+      text-align: center;
+      font-size: 1.15rem;
+    }
+    .nav-dropdown-header .chevron {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .nav-dropdown-header:hover .chevron {
+      color: var(--primary);
+    }
+    .nav-dropdown-header.open .chevron {
+      transform: rotate(180deg);
+    }
+    .nav-dropdown-header.open {
+      background: var(--sidebar-hover-bg);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .nav-submenu {
+      display: none;
+      padding-left: 3rem;
+      margin-bottom: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    
+    .nav-submenu-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-muted);
+      padding: 0.6rem 1rem;
+      text-decoration: none;
+      font-size: 0.9rem;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+      font-weight: 500;
+      position: relative;
+    }
+    .nav-submenu-link:hover {
+      background: var(--sidebar-hover-bg);
+      color: var(--primary);
+      transform: translateX(4px);
+    }
+    .nav-submenu-link.active {
+      color: var(--primary);
+      font-weight: 600;
+      background: rgba(79, 70, 229, 0.05);
+    }
+    .nav-submenu-link::before {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background-color: var(--text-muted);
+      transition: background-color 0.2s;
+    }
+    .nav-submenu-link:hover::before,
+    .nav-submenu-link.active::before {
+      background-color: var(--primary);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 1.25rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      background: var(--sidebar-bg);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+    }
+
+    /* ─── Main Content ─── */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .page-content { 
+      padding: 2rem; 
+      flex-grow: 1;
+    }
+
+    /* ─── Loading ─── */
+    #global-loader {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.75);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+
+    /* ─── Toast ─── */
+    #toast-container { z-index: 10000; }
+
+    @media (max-width: 991px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+  <link href="/public/css/custom.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- ════ GLOBAL LOADER ════ -->
+<div id="global-loader" class="d-none">
+  <div class="text-center">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;" role="status"></div>
+    <div class="mt-2 text-muted small">กำลังโหลด...</div>
+  </div>
+</div>
+
+<!-- ════ TOAST CONTAINER ════ -->
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+<!-- ════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="text-center mb-4">
+      <img src="https://cdn.jsdelivr.net/gh/Watchpolhtc/image/Logo1.png"
+           class="login-logo mb-3" alt="Logo"
+           onerror="this.style.display='none'">
+      <h3 class="fw-bold mb-1" style="color:var(--text-main); letter-spacing:-0.5px;">ระบบแจ้งซ่อมบำรุง</h3>
+      <p class="text-muted mb-0" style="font-size:0.95rem">ในสถานศึกษา</p>
+    </div>
+
+    <form id="login-form" autocomplete="off" novalidate>
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-secondary">ชื่อผู้ใช้</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0 text-muted px-3"><i class="bi bi-person fs-5"></i></span>
+          <input type="text" id="login-username" class="form-control form-control-lg border-start-0 ps-0"
+                 placeholder="กรอกชื่อผู้ใช้..." autofocus required style="box-shadow:none;">
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label class="form-label fw-semibold text-secondary">รหัสผ่าน</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0 text-muted px-3"><i class="bi bi-lock fs-5"></i></span>
+          <input type="password" id="login-password" class="form-control form-control-lg border-start-0 border-end-0 ps-0"
+                 placeholder="กรอกรหัสผ่าน..." required style="box-shadow:none;">
+          <button type="button" id="btn-show-pw" class="btn btn-outline-secondary bg-white border-start-0 text-muted">
+            <i class="bi bi-eye" id="pw-eye-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" id="btn-login"
+              class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="font-size:1.05rem; border-radius: 10px;">
+        <span id="login-spinner" class="spinner-border spinner-border-sm d-none me-2"></span>
+        <i class="bi bi-box-arrow-in-right me-2"></i>เข้าสู่ระบบ
+      </button>
+    </form>
+
+    <div class="mt-4 p-3 text-center" style="background:rgba(241, 245, 249, 0.7); border-radius: 10px; font-size:0.85rem; border: 1px dashed var(--border-color);">
+      <p class="mb-1 text-muted fw-semibold">ข้อมูลบัญชีทดสอบ</p>
+      <span class="badge bg-dark-subtle text-dark me-2 border">admin / admin</span><span class="text-muted">(SuperAdmin)</span>
+      <br>
+      <span class="badge bg-dark-subtle text-dark me-2 border mt-2">technician1 / technician1</span><span class="text-muted">(technician)</span>
+      <br>
+      <span class="badge bg-secondary-subtle text-secondary me-2 border mt-2">it3001 / it3001</span><span class="text-muted">(User)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     APP SHELL (แสดงหลัง login)
+════════════════════════════════ -->
+<div id="app-shell">
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="main-sidebar">
+    <div class="sidebar-brand d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <img src="https://cdn.jsdelivr.net/gh/Watchpolhtc/image/Logo1.png"
+             alt="Logo" onerror="this.style.display='none'">
+        <span>ระบบแจ้งซ่อม</span>
+      </div>
+      <i class="bi bi-arrow-left-circle-fill brand-back-btn d-lg-none" id="btn-sidebar-close"></i>
+    </div>
+
+    <div class="flex-grow-1 py-2">
+      <!-- หน้าหลัก (Home) -->
+      <button class="nav-item-link btn-nav-blue mb-3" data-route="dashboard">
+        <i class="bi bi-house-door-fill"></i> หน้าหลัก
+      </button>
+
+      <div class="nav-section-label">จัดการข้อมูลหลัก</div>
+      
+      <!-- แจ้งซ่อม (Purple button) -->
+      <button class="nav-item-link btn-nav-purple mb-2" data-route="repairs/new">
+        <i class="bi bi-grid-1x2-fill"></i> แจ้งซ่อม
+      </button>
+
+      <!-- ตรวจสอบสถานะซ่อม (Green button) -->
+      <button class="nav-item-link btn-nav-green mb-3" data-route="repairs">
+        <i class="bi bi-inboxes-fill"></i> ตรวจสอบสถานะซ่อม
+      </button>
+
+      <!-- จัดการข้อมูลแจ้งซ่อม Dropdown -->
+      <div class="nav-staff-only">
+        <button class="nav-dropdown-header" data-target="#submenu-repairs">
+          <span><i class="bi bi-pencil-square"></i>จัดการข้อมูลแจ้งซ่อม</span>
+          <i class="bi bi-chevron-down chevron"></i>
+        </button>
+        <div class="nav-submenu" id="submenu-repairs">
+          <a href="#repairs/verify" class="nav-submenu-link">ตรวจสอบงาน</a>
+          <a href="#repairs/schedule" class="nav-submenu-link">ตารางงาน</a>
+          <a href="#repairs/summary" class="nav-submenu-link">สรุปงาน</a>
+        </div>
+      </div>
+
+      <!-- สต็อกอะไหล่/ครุภัณฑ์ Dropdown -->
+      <div class="nav-staff-only">
+        <button class="nav-dropdown-header" data-target="#submenu-inventory">
+          <span><i class="bi bi-box-seam"></i>สต็อกอะไหล่/ครุภัณฑ์</span>
+          <i class="bi bi-chevron-down chevron"></i>
+        </button>
+        <div class="nav-submenu" id="submenu-inventory">
+          <a href="#inventory" class="nav-submenu-link">สต็อกอะไหล่</a>
+          <a href="#assets" class="nav-submenu-link">ครุภัณฑ์</a>
+          <a href="#inventory/order" class="nav-submenu-link">สั่งซื้ออุปกรณ์</a>
+          <a href="#inventory/order-history" class="nav-submenu-link">ประวัติสั่งซื้ออุปกรณ์</a>
+        </div>
+      </div>
+
+      <div class="nav-section-label">จัดการข้อมูลทั่วไป</div>
+
+      <!-- ผู้ใช้งาน Dropdown -->
+      <div class="nav-admin-only">
+        <button class="nav-dropdown-header" data-target="#submenu-users">
+          <span><i class="bi bi-person"></i>ผู้ใช้งาน</span>
+          <i class="bi bi-chevron-down chevron"></i>
+        </button>
+        <div class="nav-submenu" id="submenu-users">
+          <a href="#users" class="nav-submenu-link">การเข้าใช้งาน</a>
+          <a href="#users" class="nav-submenu-link">ตารางผู้ใช้งาน</a>
+        </div>
+      </div>
+
+      <!-- ตั้งค่าระบบ Dropdown -->
+      <div class="nav-admin-only">
+        <button class="nav-dropdown-header" data-target="#submenu-settings">
+          <span><i class="bi bi-gear-fill"></i>ตั้งค่าระบบ</span>
+          <i class="bi bi-chevron-down chevron"></i>
+        </button>
+        <div class="nav-submenu" id="submenu-settings">
+          <a href="#settings" class="nav-submenu-link">ตั้งค่าระบบ</a>
+          <!-- ตั้งค่าอื่น ๆ -->
+          <div style="padding-left: 0.2rem; margin-top: 0.2rem;">
+            <button class="nav-dropdown-header py-1 ps-2" data-target="#submenu-settings-others" style="font-size:0.85rem; width:100%; margin:0; border-radius:6px;">
+              <span><i class="bi bi-gear-fill" style="font-size:0.9rem;"></i>ตั้งค่าอื่น ๆ</span>
+              <i class="bi bi-chevron-down chevron"></i>
+            </button>
+            <div class="nav-submenu" id="submenu-settings-others" style="padding-left:0.8rem;">
+              <a href="#settings/departments" class="nav-submenu-link">ตั้งค่าระบบ Department</a>
+              <a href="#settings/purposes" class="nav-submenu-link">ตั้งค่าระบบ Objective</a>
+              <a href="#settings/locations" class="nav-submenu-link">ตั้งค่าระบบ Location</a>
+              <a href="#settings/classes" class="nav-submenu-link">ตั้งค่าระบบ ClassType</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="nav-avatar-initials">A</div>
+        <div style="min-width:0">
+          <div id="nav-fullname" class="text-dark fw-semibold" style="font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">-</div>
+          <div id="nav-role" class="text-muted" style="font-size:0.75rem;">-</div>
+        </div>
+      </div>
+      <button id="btn-logout" class="btn btn-nav-red btn-sm w-100">
+        <i class="bi bi-box-arrow-right me-1"></i> ออกจากระบบ
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+        <div class="topbar">
+      <!-- Mobile toggle -->
+      <button class="btn btn-link text-dark p-0 d-lg-none" id="btn-sidebar-toggle">
+        <i class="bi bi-list fs-4"></i>
+      </button>
+
+      <div class="text-muted d-flex align-items-center gap-2 flex-grow-1" style="font-size:0.88rem">
+        <i class="bi bi-house-door"></i>
+        <span id="breadcrumb">แดชบอร์ด</span>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-muted d-none d-md-block" style="font-size:0.82rem" id="current-date"></span>
+        
+        <!-- Controls for theme -->
+        <div class="d-flex align-items-center gap-2">
+          <!-- Dark Mode Toggle Button -->
+          <button type="button" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" id="btn-theme-toggle" title="เปลี่ยนธีม มืด/สว่าง" style="width: 32px; height: 32px; border-color: var(--border-color); color: var(--text-muted); padding: 0;">
+            <i class="bi bi-sun-fill" id="theme-icon"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content" id="app">
+      <!-- View content loads here -->
+    </div>
+  </div>
+
+</div><!-- /#app-shell -->
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/public/app.js"></script>
+
+<script>
+// ─── Login Form Logic ───
+(function () {
+
+  // แสดง/ซ่อน password
+  $('#btn-show-pw').on('click', function () {
+    const $pw = $('#login-password');
+    const isText = $pw.attr('type') === 'text';
+    $pw.attr('type', isText ? 'password' : 'text');
+    $('#pw-eye-icon').toggleClass('bi-eye bi-eye-slash');
+  });
+
+  // Submit login
+  $('#login-form').on('submit', async function (e) {
+    e.preventDefault();
+    const username = $('#login-username').val().trim();
+    const password = $('#login-password').val();
+    if (!username || !password) {
+      App.Utils.showToast('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
+      return;
+    }
+    $('#login-spinner').removeClass('d-none');
+    $('#btn-login').prop('disabled', true);
+    try {
+      await App.Auth.login(username, password);
+    } catch (err) {
+      // Error is handled inside App.Auth.login
+    } finally {
+      $('#login-spinner').addClass('d-none');
+      $('#btn-login').prop('disabled', false);
+    }
+  });
+
+  // Mobile sidebar toggle & close
+  $('#btn-sidebar-toggle').on('click', function () {
+    $('#main-sidebar').toggleClass('open');
+  });
+  $('#btn-sidebar-close').on('click', function () {
+    $('#main-sidebar').removeClass('open');
+  });
+
+  // Collapsible Dropdown sidebar menus
+  $(document).on('click', '.nav-dropdown-header', function () {
+    const target = $(this).data('target');
+    const submenu = $(target);
+    const isOpen = submenu.is(':visible');
+    
+    // Slide up other menus
+    $('.nav-submenu').not(submenu).slideUp(200);
+    $('.nav-dropdown-header').not(this).removeClass('open');
+    
+    // Toggle current menu
+    if (isOpen) {
+      submenu.slideUp(200);
+      $(this).removeClass('open');
+    } else {
+      submenu.slideDown(200);
+      $(this).addClass('open');
+    }
+  });
+
+  // Handle click for sub-menu items and close sidebar on mobile
+  $(document).on('click', '.nav-submenu-link', function () {
+    $('#main-sidebar').removeClass('open');
+    $('.nav-submenu-link').removeClass('active');
+    $(this).addClass('active');
+  });
+
+  // Set date
+  $('#current-date').text(new Date().toLocaleDateString('th-TH', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  }));
+
+  // ─── Dark Mode & Font Size Adjuster Logic ───
+  (function () {
+    // 1. Theme Toggle
+    const applyTheme = (theme) => {
+      if (theme === 'dark') {
+        $('body').addClass('dark-theme');
+        $('#theme-icon').removeClass('bi-sun-fill').addClass('bi-moon-fill');
+        $('#btn-theme-toggle').attr('title', 'เปลี่ยนเป็นธีมสว่าง');
+      } else {
+        $('body').removeClass('dark-theme');
+        $('#theme-icon').removeClass('bi-moon-fill').addClass('bi-sun-fill');
+        $('#btn-theme-toggle').attr('title', 'เปลี่ยนเป็นธีมมืด');
+      }
+      localStorage.setItem('theme', theme);
+    };
+
+    // Load initial theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+
+    $('#btn-theme-toggle').on('click', function () {
+      const currentTheme = $('body').hasClass('dark-theme') ? 'light' : 'dark';
+      applyTheme(currentTheme);
+    });
+
+    })();
+
+})();
+</script>
+
+</body>
+</html>

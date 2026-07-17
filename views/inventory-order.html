@@ -1,0 +1,292 @@
+<div class="container-fluid">
+  <!-- Top Stat Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm text-white" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 12px;">
+        <div class="card-body d-flex align-items-center justify-content-between p-3">
+          <div>
+            <div class="opacity-75 mb-1" style="font-size: 0.8rem;">คลังอุปกรณ์สั่งซื้อ</div>
+            <div class="fs-3 fw-bold" id="stat-order-total">5</div>
+          </div>
+          <i class="bi bi-box fs-2 opacity-50"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm text-white" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); border-radius: 12px;">
+        <div class="card-body d-flex align-items-center justify-content-between p-3">
+          <div>
+            <div class="opacity-75 mb-1" style="font-size: 0.8rem;">อุปกรณ์เหลือน้อยกว่า 10</div>
+            <div class="fs-3 fw-bold" id="stat-order-low10">0</div>
+          </div>
+          <i class="bi bi-exclamation-triangle fs-2 opacity-50"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-radius: 12px;">
+        <div class="card-body d-flex align-items-center justify-content-between p-3">
+          <div>
+            <div class="opacity-75 mb-1" style="font-size: 0.8rem;">อุปกรณ์เหลือน้อยกว่า 5</div>
+            <div class="fs-3 fw-bold" id="stat-order-low5">4</div>
+          </div>
+          <i class="bi bi-exclamation-octagon fs-2 opacity-50"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card border-0 shadow-sm text-white" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border-radius: 12px;">
+        <div class="card-body d-flex align-items-center justify-content-between p-3">
+          <div>
+            <div class="opacity-75 mb-1" style="font-size: 0.8rem;">อุปกรณ์หมด</div>
+            <div class="fs-3 fw-bold" id="stat-order-empty">1</div>
+          </div>
+          <i class="bi bi-x-circle fs-2 opacity-50"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Panel: Product List -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+          <span class="fw-semibold text-dark"><i class="bi bi-basket3 me-2 text-primary"></i>รายการอุปกรณ์ที่ต้องซื้อ</span>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm" id="search-products" placeholder="ค้นหารายการ..." style="width: 180px;">
+            <button class="btn btn-sm btn-success" id="btn-export-products"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">รูป</th>
+                  <th>รหัส</th>
+                  <th>อุปกรณ์</th>
+                  <th>จำนวน</th>
+                  <th class="pe-3 text-end">เลือก</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Cart Summary -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom py-3">
+          <span class="fw-semibold text-dark"><i class="bi bi-receipt me-2 text-primary"></i>สรุปรายการสั่งซื้อ</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">รหัส</th>
+                  <th>อุปกรณ์</th>
+                  <th style="width: 100px;">จำนวน</th>
+                  <th>รวมราคา</th>
+                  <th class="pe-3 text-end">ลบ</th>
+                </tr>
+              </thead>
+              <tbody id="cart-tbody">
+                <tr><td colspan="5" class="text-center py-5 text-muted">ไม่มีรายการสั่งซื้อที่เลือก</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="p-3 border-top d-flex gap-2">
+            <button class="btn btn-primary flex-grow-1" id="btn-confirm-purchase">ยืนยันสั่งซื้อ</button>
+            <button class="btn btn-danger" id="btn-cancel-purchase">ยกเลิกสั่งซื้อ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let parts = [];
+  let cart = [];
+
+  function fetchParts() {
+    App.API.get('/spare-parts')
+      .done(function(res) {
+        if (!res.success) return;
+        // Map database format to local format
+        parts = res.data.map(p => ({
+          id: p.code,
+          dbId: p.id,
+          class: p.class_type_name || 'ทั่วไป',
+          name: p.name,
+          qty: p.quantity,
+          price: parseFloat(p.unit_price),
+          img: p.image_url || 'https://lh3.googleusercontent.com/d/1fZuqgA8gVY3trs8jiYoXmUpGuyuMSn7j'
+        }));
+        
+        updateStatCards();
+        renderProducts();
+      })
+      .fail(function(err) {
+        console.error('Error fetching spare parts:', err);
+      });
+  }
+
+  function updateStatCards() {
+    $('#stat-order-total').text(parts.length);
+    $('#stat-order-low10').text(parts.filter(p => p.qty < 10 && p.qty >= 5).length);
+    $('#stat-order-low5').text(parts.filter(p => p.qty < 5 && p.qty > 0).length);
+    $('#stat-order-empty').text(parts.filter(p => p.qty === 0).length);
+  }
+
+  function renderProducts() {
+    const search = $('#search-products').val().toLowerCase();
+    
+    let filtered = parts;
+    if (search) {
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || p.id.toLowerCase().includes(search));
+    }
+
+    const html = filtered.map(p => `
+      <tr>
+        <td class="ps-3"><img src="${p.img}" class="rounded shadow-sm" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.src='https://lh3.googleusercontent.com/d/1fZuqgA8gVY3trs8jiYoXmUpGuyuMSn7j'"></td>
+        <td class="fw-semibold text-secondary" style="font-size:0.85rem;">${p.id}</td>
+        <td class="fw-semibold" style="font-size:0.85rem;">${p.name}</td>
+        <td style="font-size:0.85rem;" class="${p.qty === 0 ? 'text-danger fw-bold' : (p.qty < 5 ? 'text-warning' : '')}">${p.qty}</td>
+        <td class="pe-3 text-end">
+          <button class="btn btn-sm btn-primary py-1 px-2 btn-add-to-cart" data-id="${p.id}" style="font-size:0.75rem;">สั่งซื้อ</button>
+        </td>
+      </tr>
+    `).join('');
+    
+    $('#products-tbody').html(html || '<tr><td colspan="5" class="text-center py-4 text-muted">ไม่พบข้อมูล</td></tr>');
+  }
+
+  function renderCart() {
+    if (cart.length === 0) {
+      $('#cart-tbody').html('<tr><td colspan="5" class="text-center py-5 text-muted">ไม่มีรายการสั่งซื้อที่เลือก</td></tr>');
+      return;
+    }
+
+    const html = cart.map((c, idx) => `
+      <tr>
+        <td class="ps-3 text-secondary" style="font-size:0.85rem;">${c.id}</td>
+        <td class="fw-semibold" style="font-size:0.85rem;">${c.name}</td>
+        <td>
+          <input type="number" class="form-control form-control-sm cart-qty-input" data-id="${c.id}" value="${c.orderQty}" min="1" style="max-width: 60px;">
+        </td>
+        <td class="fw-semibold" style="font-size:0.85rem;">${(c.price * c.orderQty).toLocaleString('th-TH')}</td>
+        <td class="pe-3 text-end">
+          <button class="btn btn-sm btn-link text-danger p-0 btn-remove-cart" data-id="${c.id}"><i class="bi bi-trash fs-5"></i></button>
+        </td>
+      </tr>
+    `).join('');
+
+    $('#cart-tbody').html(html);
+  }
+
+  // Add to cart click
+  $(document).on('click', '.btn-add-to-cart', function() {
+    const pid = $(this).data('id');
+    const item = parts.find(p => p.id === pid);
+    if (!item) return;
+
+    const existing = cart.find(c => c.id === pid);
+    if (existing) {
+      existing.orderQty++;
+    } else {
+      cart.push({ ...item, orderQty: 1 });
+    }
+
+    App.Utils.showToast(`เพิ่ม ${item.name} เข้ารถเข็นเรียบร้อย`, 'success');
+    renderCart();
+  });
+
+  // Remove from cart click
+  $(document).on('click', '.btn-remove-cart', function() {
+    const pid = $(this).data('id');
+    cart = cart.filter(c => c.id !== pid);
+    renderCart();
+  });
+
+  // Quantity input change
+  $(document).on('change', '.cart-qty-input', function() {
+    const pid = $(this).data('id');
+    const val = parseInt($(this).val()) || 1;
+    const existing = cart.find(c => c.id === pid);
+    if (existing) {
+      existing.orderQty = val;
+      renderCart();
+    }
+  });
+
+  // Cancel order click
+  $('#btn-cancel-purchase').on('click', function() {
+    cart = [];
+    renderCart();
+    App.Utils.showToast('ยกเลิกรายการสั่งซื้อเรียบร้อยแล้ว', 'info');
+  });
+
+  // Confirm order click
+  $('#btn-confirm-purchase').on('click', function() {
+    if (cart.length === 0) {
+      App.Utils.showToast('กรุณาเลือกวัสดุอุปกรณ์อย่างน้อย 1 ชิ้น', 'warning');
+      return;
+    }
+
+    const orderNo = `PM-${Math.floor(10000 + Math.random() * 90000)}/2568`;
+    const orderDate = new Date().toISOString().split('T')[0];
+
+    const payload = {
+      order_no: orderNo,
+      order_date: orderDate,
+      items: cart.map(c => ({
+        partId: c.id,
+        qty: c.orderQty
+      }))
+    };
+
+    App.API.post('/purchase-orders', payload)
+      .done(function(res) {
+        if (res.success) {
+          App.Utils.showToast('ยืนยันทำรายการสั่งซื้อวัสดุอุปกรณ์สำเร็จเรียบร้อย', 'success');
+          cart = [];
+          renderCart();
+          fetchParts();
+        } else {
+          App.Utils.showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'danger');
+        }
+      })
+      .fail(function(err) {
+        console.error('Confirm purchase failed:', err);
+      });
+  });
+
+  // Excel export
+  $('#btn-export-products').on('click', function() {
+    let csvContent = "\uFEFF";
+    csvContent += "รหัส,อุปกรณ์,จำนวนคงเหลือ\n";
+    parts.forEach(p => {
+      csvContent += `${p.id},${p.name},${p.qty}\n`;
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "products_to_buy.csv";
+    link.click();
+  });
+
+  $('#search-products').on('input', renderProducts);
+
+  // Init
+  fetchParts();
+})();
+</script>

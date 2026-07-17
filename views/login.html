@@ -1,0 +1,87 @@
+﻿<div class="container">
+  <div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-11 col-sm-8 col-md-5 col-lg-4">
+      <div class="card shadow-lg border-0">
+        <div class="card-body p-4 p-md-5">
+          <div class="text-center mb-4">
+            <img src="https://cdn.jsdelivr.net/gh/Watchpolhtc/image/Logo1.png" alt="Logo" height="72" class="mb-3"
+              onerror="this.src='https://via.placeholder.com/72'">
+            <h4 class="fw-bold text-primary">ระบบแจ้งซ่อมบำรุง</h4>
+            <p class="text-muted mb-0" style="font-size: 0.9rem;">ในสถานศึกษา</p>
+          </div>
+
+          <form id="login-form" autocomplete="off">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">ชื่อผู้ใช้</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" class="form-control" id="login-username" placeholder="ชื่อผู้ใช้" required autofocus>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold">รหัสผ่าน</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" class="form-control" id="login-password" placeholder="รหัสผ่าน" required>
+                <button class="btn btn-outline-secondary" type="button" id="btn-toggle-password">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="btn-login">
+              <span class="spinner-border spinner-border-sm d-none me-2" id="login-spinner"></span>
+              เข้าสู่ระบบ
+            </button>
+          </form>
+
+          <div class="mt-4 text-center">
+            <small class="text-muted">
+              <i class="bi bi-shield-check me-1"></i> เข้าสู่ระบบอย่างปลอดภัยด้วย Session Authentication
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-3 text-muted" style="font-size: 0.8rem;">
+        <p class="mb-1">สำหรับทดสอบ:</p>
+        <code>admin / admin</code> (SuperAdmin) &nbsp;|&nbsp;
+        <code>technician1 / technician1</code>(technician)
+        <code>it3001 / it3001</code> (User)
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    // Password visibility toggle
+    $('#btn-toggle-password').on('click', function () {
+      const $input = $('#login-password');
+      const type = $input.attr('type') === 'password' ? 'text' : 'password';
+      $input.attr('type', type);
+      $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+    });
+
+    // Login submit
+    $('#login-form').on('submit', function (e) {
+      e.preventDefault();
+      const username = $('#login-username').val().trim();
+      const password = $('#login-password').val();
+
+      if (!username || !password) {
+        App.Utils.showToast('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'warning');
+        return;
+      }
+
+      $('#login-spinner').removeClass('d-none');
+      $('#btn-login').prop('disabled', true);
+
+      App.Auth.login(username, password).finally(() => {
+        $('#login-spinner').addClass('d-none');
+        $('#btn-login').prop('disabled', false);
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,158 @@
+<div class="container-fluid">
+  <!-- Tabs bar (Status Counters) -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+      <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center" id="status-tabs">
+        <button class="btn btn-outline-info active btn-status-tab" data-status="2">
+          <i class="bi bi-arrow-repeat me-1"></i> กำลังดำเนินการ <span class="badge bg-info text-dark ms-1" id="count-status-2">0</span>
+        </button>
+        <button class="btn btn-outline-warning btn-status-tab" data-status="3">
+          <i class="bi bi-tools me-1"></i> อยู่ระหว่างซ่อม <span class="badge bg-warning text-dark ms-1" id="count-status-3">0</span>
+        </button>
+        <button class="btn btn-outline-secondary btn-status-tab" data-status="6">
+          <i class="bi bi-hourglass-split me-1"></i> รออะไหล่ <span class="badge bg-secondary ms-1" id="count-status-6">0</span>
+        </button>
+        <button class="btn btn-outline-primary btn-status-tab" data-status="7">
+          <i class="bi bi-truck me-1"></i> ส่งซ่อมภายนอก <span class="badge bg-primary ms-1" id="count-status-7">0</span>
+        </button>
+        <button class="btn btn-outline-danger btn-status-tab" data-status="5">
+          <i class="bi bi-x-circle me-1"></i> ซ่อมไม่สำเร็จ <span class="badge bg-danger ms-1" id="count-status-5">0</span>
+        </button>
+        <button class="btn btn-outline-dark btn-status-tab" data-status="8">
+          <i class="bi bi-slash-circle me-1"></i> ยกเลิกการซ่อม <span class="badge bg-dark ms-1" id="count-status-8">0</span>
+        </button>
+        <button class="btn btn-outline-success btn-status-tab" data-status="4">
+          <i class="bi bi-check-circle me-1"></i> ซ่อมสำเร็จ <span class="badge bg-success ms-1" id="count-status-4">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+      <span class="fw-semibold text-dark"><i class="bi bi-calendar-range me-2 text-primary"></i>ตารางงานแจ้งซ่อม</span>
+      <div style="width: 250px;">
+        <input type="text" class="form-control form-control-sm" id="schedule-search" placeholder="ค้นหารายการ...">
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">เลขที่</th>
+              <th>สถานะ</th>
+              <th>สถานที่</th>
+              <th>ประเภท</th>
+              <th>เลขครุภัณฑ์</th>
+              <th>รายละเอียด</th>
+              <th>ผู้รับงาน</th>
+              <th>ภาพประกอบ</th>
+              <th class="pe-4 text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-tbody">
+            <tr><td colspan="9" class="text-center py-5 text-muted">กำลังโหลดข้อมูล...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let repairs = [];
+  let currentStatusFilter = 2; // Default to 'กำลังดำเนินการ'
+
+  function fetchScheduleList() {
+    App.API.getRepairs({ limit: 200 })
+      .done(function(res) {
+        if (!res.success) return;
+        repairs = res.data;
+        
+        // Update tab counters
+        updateCounters();
+        renderScheduleTable();
+      })
+      .fail(function(err) {
+        console.error('Error fetching schedule:', err);
+      });
+  }
+
+  function updateCounters() {
+    const counts = { 2: 0, 8: 0, 3: 0, 7: 0, 5: 0, 6: 0, 4: 0 };
+    repairs.forEach(r => {
+      if (counts[r.status_id] !== undefined) {
+        counts[r.status_id]++;
+      }
+    });
+
+    for (const [sid, count] of Object.entries(counts)) {
+      $(`#count-status-${sid}`).text(count);
+    }
+  }
+
+  function renderScheduleTable() {
+    const searchVal = $('#schedule-search').val().toLowerCase();
+    
+    let filtered = repairs.filter(r => r.status_id === parseInt(currentStatusFilter));
+    
+    if (searchVal) {
+      filtered = filtered.filter(r => 
+        r.repair_id.toLowerCase().includes(searchVal) ||
+        (r.detail && r.detail.toLowerCase().includes(searchVal)) ||
+        (r.location_name && r.location_name.toLowerCase().includes(searchVal))
+      );
+    }
+
+    if (filtered.length === 0) {
+      $('#schedule-tbody').html('<tr><td colspan="9" class="text-center py-5 text-muted">ไม่มีข้อมูลในตาราง</td></tr>');
+      return;
+    }
+
+    const rows = filtered.map(r => {
+      // First image as representative thumbnail
+      const imgThumb = r.img1_url ? 
+        `<a href="${r.img1_url}" target="_blank"><img src="${r.img1_url}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;"></a>` : '-';
+      
+      const badge = App.Utils.getStatusBadge(r.status_id);
+
+      return `
+        <tr>
+          <td class="ps-4 fw-semibold text-primary">${r.repair_id}</td>
+          <td>${badge}</td>
+          <td style="font-size: 0.85rem;">${r.location_name || '-'}</td>
+          <td style="font-size: 0.85rem;">${r.class_type_name || '-'}</td>
+          <td style="font-size: 0.85rem;">${r.asset_no || '-'}</td>
+          <td style="font-size: 0.85rem; max-width: 200px;" class="text-truncate">${r.detail}</td>
+          <td style="font-size: 0.85rem;" class="fw-semibold text-secondary">${r.assignee_name || 'รอมอบหมาย'}</td>
+          <td>${imgThumb}</td>
+          <td class="pe-4 text-end">
+            <a href="#repairs/${r.repair_id}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-gear-fill"></i> จัดการงาน
+            </a>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $('#schedule-tbody').html(rows);
+  }
+
+  // Tabs toggle click
+  $('.btn-status-tab').on('click', function() {
+    $('.btn-status-tab').removeClass('active');
+    $(this).addClass('active');
+    currentStatusFilter = $(this).data('status');
+    renderScheduleTable();
+  });
+
+  // Search input change
+  $('#schedule-search').on('input', renderScheduleTable);
+
+  // Load schedule on init
+  fetchScheduleList();
+})();
+</script>

@@ -1,0 +1,595 @@
+<div class="container-fluid">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <h4 class="fw-bold mb-0">
+      <i class="bi bi-box-seam text-primary me-2"></i>สต็อกอะไหล่
+    </h4>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-2 align-items-center">
+        <div class="col-12 col-md-3">
+          <select class="form-select" id="parts-category-filter">
+            <option value="">กรุณาเลือกรายการ</option>
+            <option value="ครุภัณฑ์คอมพิวเตอร์">ครุภัณฑ์คอมพิวเตอร์</option>
+            <option value="ครุภัณฑ์สำนักงาน">ครุภัณฑ์สำนักงาน</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-4">
+          <input type="text" class="form-control" id="parts-search" placeholder="ค้นหารายการ...">
+        </div>
+        <div class="col-12 col-md-5 text-end d-flex gap-2 justify-content-end">
+          <button class="btn btn-purple text-white" id="btn-adjust-stock">
+            <i class="bi bi-sliders me-1"></i>ปรับสต็อก
+          </button>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-add-part">
+            <i class="bi bi-plus-lg me-1"></i>เพิ่มอะไหล่
+          </button>
+          <button class="btn btn-success" id="btn-export-parts">
+            <i class="bi bi-file-earmark-excel me-1"></i>Excel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spare Parts List Card -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">ลำดับ</th>
+              <th>รูป</th>
+              <th>รหัส</th>
+              <th>รายการ</th>
+              <th>หมวดหมู่</th>
+              <th>จำนวน</th>
+              <th>ราคา</th>
+              <th style="width: 200px;">เพิ่มสต็อก</th>
+              <th class="pe-4 text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody id="parts-tbody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add New Part -->
+<div class="modal fade" id="modal-add-part" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>เพิ่มรายการอะไหล่</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-part-form">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">รหัสอะไหล่</label>
+            <input type="text" class="form-control" id="part-id" placeholder="REP-xxxx" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">รายการ</label>
+            <input type="text" class="form-control" id="part-name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">หมวดหมู่ครุภัณฑ์</label>
+            <select class="form-select" id="part-category" required>
+              <option value="">เลือกหมวดหมู่</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">จำนวนเริ่มต้น</label>
+            <input type="number" class="form-control" id="part-qty" min="0" value="0" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">ราคาต่อหน่วย (บาท)</label>
+            <input type="number" class="form-control" id="part-price" min="0" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">รูปภาพอะไหล่</label>
+            <input type="file" class="form-control" id="part-image" accept="image/*">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button type="button" class="btn btn-primary" id="btn-save-part">บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit Part -->
+<div class="modal fade" id="modal-edit-part" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>แก้ไขรายการอะไหล่</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-part-form">
+          <input type="hidden" id="edit-part-id">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">รหัสอะไหล่</label>
+            <input type="text" class="form-control" id="edit-part-code" placeholder="REP-xxxx" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">รายการ</label>
+            <input type="text" class="form-control" id="edit-part-name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">หมวดหมู่ครุภัณฑ์</label>
+            <select class="form-select" id="edit-part-category" required>
+              <option value="">เลือกหมวดหมู่</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">จำนวนคงเหลือ</label>
+            <input type="number" class="form-control" id="edit-part-qty" min="0" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">ราคาต่อหน่วย (บาท)</label>
+            <input type="number" class="form-control" id="edit-part-price" min="0" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">รูปภาพอะไหล่</label>
+            <input type="file" class="form-control" id="edit-part-image" accept="image/*">
+            <div id="edit-part-image-preview" class="mt-2 text-center"></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button type="button" class="btn btn-primary" id="btn-update-part">บันทึกการแก้ไข</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: View Part Details -->
+<div class="modal fade" id="modal-view-part" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold text-primary"><i class="bi bi-info-circle me-2"></i>รายละเอียดอะไหล่</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="card border-0 text-center">
+          <div class="mb-3">
+            <img id="view-part-image" src="" class="rounded shadow-sm img-thumbnail" style="max-height: 200px; max-width: 100%; object-fit: cover;" onerror="this.src='https://lh3.googleusercontent.com/d/1fZuqgA8gVY3trs8jiYoXmUpGuyuMSn7j'">
+          </div>
+          <div class="card-body p-0">
+            <h4 class="fw-bold mb-1" id="view-part-name"></h4>
+            <p class="text-muted mb-3" id="view-part-code" style="font-size: 0.95rem;"></p>
+            
+            <hr class="my-3">
+            
+            <div class="row text-start g-3">
+              <div class="col-6">
+                <span class="text-muted d-block small">หมวดหมู่ครุภัณฑ์</span>
+                <strong id="view-part-category" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">ราคาต่อหน่วย</span>
+                <strong id="view-part-price" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">จำนวนคงเหลือ</span>
+                <strong id="view-part-qty" class="text-dark">-</strong>
+              </div>
+              <div class="col-6">
+                <span class="text-muted d-block small">สถานะสต็อก</span>
+                <span id="view-part-stock-status" class="badge"></span>
+              </div>
+              <div class="col-12" id="view-part-desc-container">
+                <span class="text-muted d-block small">รายละเอียดเพิ่มเติม</span>
+                <p id="view-part-desc" class="text-secondary mb-0" style="font-size: 0.9rem; white-space: pre-wrap;"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light border-0">
+        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">ปิด</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let parts = [];
+  let categories = [];
+
+  // Load categories and then load parts
+  function initInventory() {
+    App.API.get('/class-types')
+      .done(res => {
+        if (res.success) {
+          categories = res.data;
+          // Populate category filters & selects
+          $('#parts-category-filter').html('<option value="">กรุณาเลือกประเภท</option>');
+          $('#part-category').html('<option value="">เลือกหมวดหมู่</option>');
+          categories.forEach(c => {
+            $('#parts-category-filter').append(`<option value="${c.id}">${c.name}</option>`);
+            $('#part-category').append(`<option value="${c.id}">${c.name}</option>`);
+            $('#edit-part-category').append(`<option value="${c.id}">${c.name}</option>`);
+          });
+        }
+        fetchParts();
+      });
+  }
+
+  function fetchParts() {
+    const categoryId = $('#parts-category-filter').val();
+    const searchVal = $('#parts-search').val().trim();
+
+    const query = { limit: 100 };
+    if (searchVal) query.search = searchVal;
+    // Client-side category filtering or we can just filter it on client
+    App.API.get('/spare-parts', query)
+      .done(res => {
+        if (!res.success) return;
+        parts = res.data;
+        renderPartsTable();
+      });
+  }
+
+  function renderPartsTable() {
+    const categoryFilter = $('#parts-category-filter').val();
+    
+    let filtered = parts;
+    if (categoryFilter) {
+      filtered = filtered.filter(p => p.class_type_id == categoryFilter);
+    }
+
+    if (filtered.length === 0) {
+      $('#parts-tbody').html('<tr><td colspan="9" class="text-center py-5 text-muted">ไม่พบรายการอะไหล่</td></tr>');
+      return;
+    }
+
+    const rows = filtered.map((p, idx) => {
+      const qtyClass = p.quantity === 0 ? 'text-danger fw-bold' : (p.quantity <= p.min_stock ? 'text-danger' : 'text-dark');
+      
+      return `
+        <tr data-id="${p.id}">
+          <td class="ps-4 text-muted">${idx + 1}</td>
+          <td><img src="${p.image_url || '/public/images/no-image.png'}" class="rounded shadow-sm" style="width: 38px; height: 38px; object-fit: cover;" onerror="this.src='https://lh3.googleusercontent.com/d/1fZuqgA8gVY3trs8jiYoXmUpGuyuMSn7j'"></td>
+          <td class="fw-semibold text-secondary">${p.code}</td>
+          <td class="fw-semibold">${p.name}</td>
+          <td style="font-size: 0.85rem;" class="text-muted">${p.class_type_name || '-'}</td>
+          <td class="${qtyClass}">${p.quantity}</td>
+          <td class="fw-semibold">${parseFloat(p.unit_price || 0).toLocaleString('th-TH')}</td>
+          <td>
+            <div class="d-flex align-items-center gap-1" style="max-width: 170px;">
+              <input type="number" class="form-control form-control-sm input-qty-adjust" placeholder="เพิ่ม..." min="1" data-id="${p.id}" id="input-qty-${p.id}" style="width: 70px;">
+              <button class="btn btn-sm btn-success btn-quick-adjust d-none" data-id="${p.id}" type="button" id="btn-quick-adjust-${p.id}" title="บันทึกการเพิ่มสต็อก"><i class="bi bi-plus-lg"></i> เพิ่ม</button>
+            </div>
+          </td>
+          <td class="pe-4 text-end">
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-info text-white btn-view-part" data-id="${p.id}"><i class="bi bi-eye"></i></button>
+              <button class="btn btn-warning text-white btn-edit-part" data-id="${p.id}"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-danger" id="btn-delete-part-${p.id}"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $('#parts-tbody').html(rows);
+
+    // Bind delete events
+    filtered.forEach(p => {
+      $(`#btn-delete-part-${p.id}`).on('click', function() {
+        if (confirm(`คุณต้องการลบรายการอะไหล่ ${p.name} ใช่หรือไม่?`)) {
+          App.API.del(`/spare-parts/${p.id}`)
+            .done(res => {
+              if (res.success) {
+                App.Utils.showToast('ลบรายการอะไหล่สำเร็จ', 'success');
+                fetchParts();
+              } else {
+                App.Utils.showToast(res.message || 'ลบไม่สำเร็จ', 'danger');
+              }
+            });
+        }
+      });
+    });
+
+    // Show/hide quick adjust button based on input value
+    $('.input-qty-adjust').on('input', function() {
+      const pid = $(this).data('id');
+      const val = $(this).val();
+      if (val !== '') {
+        $(`#btn-quick-adjust-${pid}`).removeClass('d-none');
+      } else {
+        $(`#btn-quick-adjust-${pid}`).addClass('d-none');
+      }
+    });
+
+    // Bind quick adjust events
+    $('.btn-quick-adjust').on('click', function() {
+      const pid = $(this).data('id');
+      const val = $(`#input-qty-${pid}`).val();
+      if (val === '') {
+        App.Utils.showToast('กรุณาระบุจำนวนที่ต้องการปรับปรุง', 'warning');
+        return;
+      }
+      const count = parseInt(val);
+      App.Utils.showLoader(true);
+      App.API.post('/stock-transactions/add', {
+        spare_part_id: pid,
+        quantity: count,
+        note: 'เพิ่มสต็อกด่วนจากตาราง'
+      })
+      .done(() => {
+        App.Utils.showToast('ปรับปรุงจำนวนสต็อกสำเร็จ', 'success');
+        fetchParts();
+      })
+      .fail(() => {
+        App.Utils.showToast('มีข้อผิดพลาดในการปรับปรุงข้อมูล', 'danger');
+      })
+      .always(() => {
+        App.Utils.showLoader(false);
+      });
+    });
+
+    // Bind view events
+    $('.btn-view-part').on('click', function() {
+      const partId = $(this).data('id');
+      App.API.get(`/spare-parts/${partId}`)
+        .done(res => {
+          if (res.success) {
+            const p = res.data;
+            $('#view-part-image').attr('src', p.image_url || '/public/images/no-image.png');
+            $('#view-part-name').text(p.name);
+            $('#view-part-code').text(`รหัส: ${p.code}`);
+            $('#view-part-category').text(p.class_type_name || '-');
+            $('#view-part-price').text(`${parseFloat(p.unit_price || 0).toLocaleString('th-TH')} บาท`);
+            $('#view-part-qty').text(`${p.quantity} ชิ้น`);
+            
+            const statusBadge = $('#view-part-stock-status');
+            if (p.quantity === 0) {
+              statusBadge.text('สินค้าหมด').attr('class', 'badge bg-danger');
+            } else if (p.quantity <= p.min_stock) {
+              statusBadge.text('สต็อกต่ำ').attr('class', 'badge bg-warning text-dark');
+            } else {
+              statusBadge.text('ปกติ').attr('class', 'badge bg-success');
+            }
+
+            if (p.description) {
+              $('#view-part-desc').text(p.description);
+              $('#view-part-desc-container').removeClass('d-none');
+            } else {
+              $('#view-part-desc-container').addClass('d-none');
+            }
+
+            $('#modal-view-part').modal('show');
+          } else {
+            App.Utils.showToast(res.message || 'ดึงข้อมูลไม่สำเร็จ', 'danger');
+          }
+        });
+    });
+
+    // Bind edit events
+    $('.btn-edit-part').on('click', function() {
+      const partId = $(this).data('id');
+      App.API.get(`/spare-parts/${partId}`)
+        .done(res => {
+          if (res.success) {
+            const p = res.data;
+            $('#edit-part-id').val(p.id);
+            $('#edit-part-code').val(p.code);
+            $('#edit-part-name').val(p.name);
+            $('#edit-part-category').val(p.class_type_id || '');
+            $('#edit-part-qty').val(p.quantity);
+            $('#edit-part-price').val(p.unit_price);
+            if (p.image_url) {
+              $('#edit-part-image-preview').html(`<img src="${p.image_url}" class="rounded shadow-sm" style="max-height: 80px;">`);
+            } else {
+              $('#edit-part-image-preview').html('ไม่มีรูปภาพเดิม');
+            }
+            $('#modal-edit-part').modal('show');
+          } else {
+            App.Utils.showToast(res.message || 'ดึงข้อมูลไม่สำเร็จ', 'danger');
+          }
+        });
+    });
+  }
+
+  // Adjust stock quantities
+  $('#btn-adjust-stock').on('click', function() {
+    let promises = [];
+    $('.input-qty-adjust').each(function() {
+      const val = $(this).val();
+      if (val !== '') {
+        const pid = $(this).data('id');
+        const count = parseInt(val);
+        promises.push(
+          App.API.post('/stock-transactions/add', {
+            spare_part_id: pid,
+            quantity: count,
+            note: 'เพิ่มสต็อกหน้าแผงควบคุม'
+          })
+        );
+      }
+    });
+
+    if (promises.length > 0) {
+      App.Utils.showLoader(true);
+      $.when.apply($, promises)
+        .done(() => {
+          App.Utils.showToast('ปรับปรุงจำนวนสต็อกสำเร็จเรียบร้อย', 'success');
+          fetchParts();
+        })
+        .fail(() => {
+          App.Utils.showToast('มีข้อผิดพลาดในการปรับปรุงข้อมูลบางรายการ', 'danger');
+          fetchParts();
+        })
+        .always(() => {
+          App.Utils.showLoader(false);
+        });
+    } else {
+      App.Utils.showToast('ไม่มีรายการใดที่มีการเปลี่ยนแปลงจำนวน', 'warning');
+    }
+  });
+
+  // Add new part item
+  $('#btn-save-part').on('click', function() {
+    const code = $('#part-id').val().trim();
+    const name = $('#part-name').val().trim();
+    const categoryId = $('#part-category').val();
+    const qty = parseInt($('#part-qty').val()) || 0;
+    const price = parseFloat($('#part-price').val()) || 0;
+    const imageFile = $('#part-image')[0].files[0];
+
+    if (!code || !name || !categoryId) {
+      App.Utils.showToast('กรุณากรอกข้อมูลสำคัญให้ครบถ้วน', 'warning');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('code', code);
+    formData.append('name', name);
+    formData.append('class_type_id', categoryId);
+    formData.append('quantity', qty);
+    formData.append('unit_price', price);
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    App.Utils.showLoader(true);
+    $.ajax({
+      url: '/api/spare-parts',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(res) {
+        if (res.success) {
+          $('#modal-add-part').modal('hide');
+          $('#add-part-form')[0].reset();
+          App.Utils.showToast('เพิ่มอะไหล่เรียบร้อย', 'success');
+          fetchParts();
+        } else {
+          App.Utils.showToast(res.message || 'เพิ่มอะไหล่ล้มเหลว', 'danger');
+        }
+      },
+      error: function() {
+        App.Utils.showToast('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์', 'danger');
+      },
+      complete: function() {
+        App.Utils.showLoader(false);
+      }
+    });
+  });
+
+  // Update part item
+  $('#btn-update-part').on('click', function() {
+    const id = $('#edit-part-id').val();
+    const code = $('#edit-part-code').val().trim();
+    const name = $('#edit-part-name').val().trim();
+    const categoryId = $('#edit-part-category').val();
+    const qty = parseInt($('#edit-part-qty').val()) || 0;
+    const price = parseFloat($('#edit-part-price').val()) || 0;
+    const imageFile = $('#edit-part-image')[0].files[0];
+
+    if (!code || !name || !categoryId) {
+      App.Utils.showToast('กรุณากรอกข้อมูลสำคัญให้ครบถ้วน', 'warning');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('code', code);
+    formData.append('name', name);
+    formData.append('class_type_id', categoryId);
+    formData.append('quantity', qty);
+    formData.append('unit_price', price);
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    App.Utils.showLoader(true);
+    $.ajax({
+      url: `/api/spare-parts/${id}`,
+      type: 'PUT',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(res) {
+        if (res.success) {
+          $('#modal-edit-part').modal('hide');
+          $('#edit-part-form')[0].reset();
+          $('#edit-part-image-preview').empty();
+          App.Utils.showToast('แก้ไขข้อมูลอะไหล่เรียบร้อย', 'success');
+          fetchParts();
+        } else {
+          App.Utils.showToast(res.message || 'แก้ไขข้อมูลอะไหล่ล้มเหลว', 'danger');
+        }
+      },
+      error: function() {
+        App.Utils.showToast('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์', 'danger');
+      },
+      complete: function() {
+        App.Utils.showLoader(false);
+      }
+    });
+  });
+
+  // Export excel
+  $('#btn-export-parts').on('click', function() {
+    let csvContent = "\uFEFF";
+    csvContent += "ลำดับ,รหัส,รายการ,หมวดหมู่,จำนวน,ราคา\n";
+    parts.forEach((p, idx) => {
+      csvContent += `${idx + 1},${p.code},${p.name},${p.class_type_name || ''},${p.quantity},${p.unit_price}\n`;
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "spare_parts_list.csv";
+    link.click();
+  });
+
+  // Event handlers
+  $('#parts-category-filter, #parts-search').on('input change', fetchParts);
+
+  $('#part-category').on('change', function() {
+    const val = $(this).val();
+    if (val) {
+      App.API.get('/spare-parts/next-code?class_type_id=' + val)
+        .done(res => {
+          if (res.success) {
+            $('#part-id').val(res.nextCode);
+          }
+        });
+    } else {
+      $('#part-id').val('');
+    }
+  });
+
+  $('#edit-part-category').on('change', function() {
+    const val = $(this).val();
+    if (val && !$('#edit-part-code').val()) {
+      App.API.get('/spare-parts/next-code?class_type_id=' + val)
+        .done(res => {
+          if (res.success) {
+            $('#edit-part-code').val(res.nextCode);
+          }
+        });
+    }
+  });
+
+  // Init
+  initInventory();
+})();
+</script>

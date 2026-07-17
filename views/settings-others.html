@@ -1,0 +1,177 @@
+<div class="container d-flex justify-content-center py-4">
+  <div class="card border-0 shadow-lg p-4 bg-white" style="width: 100%; max-width: 580px; border-radius: 24px;">
+    
+    <!-- Title Area -->
+    <div class="text-center mb-4">
+      <h4 class="fw-bold d-flex align-items-center justify-content-center gap-2">
+        <span>📝</span> ตั้งค่าระบบ <span id="settings-title-type" class="text-danger fw-semibold">Department</span>
+      </h4>
+    </div>
+
+    <!-- Add Item Row -->
+    <div class="input-group mb-4 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+      <input type="text" class="form-control border-0 bg-light py-2 ps-3" id="input-new-item" placeholder="กรุณากรอกข้อมูล" style="font-size: 0.95rem;">
+      <button class="btn btn-purple px-4 fw-semibold text-white border-0" id="btn-add-setting-item" style="background: #8b5cf6;">เพิ่ม</button>
+    </div>
+
+    <!-- Table Header Label -->
+    <div class="d-flex text-white py-2 px-3 fw-bold align-items-center mb-2" style="background: #3b82f6; border-radius: 8px 8px 0 0; font-size: 0.95rem;">
+      <div class="flex-grow-1"><i class="bi bi-tools me-2"></i>รายการ</div>
+      <div style="width: 80px;" class="text-end">จัดการ</div>
+    </div>
+
+    <!-- List Items Container -->
+    <div class="border border-top-0 border-light-subtle rounded-bottom-3 mb-4" id="settings-list-container" style="max-height: 400px; overflow-y: auto; border-radius: 0 0 8px 8px;">
+      <!-- Loaded dynamically -->
+    </div>
+
+    <!-- Footer Action Buttons -->
+    <div class="d-flex justify-content-center gap-3">
+      <button class="btn btn-primary px-4 py-2 fw-semibold" id="btn-save-settings-bulk" style="border-radius: 10px; font-size: 0.95rem; background: #3b82f6; border: none;">บันทึกข้อมูล</button>
+      <button class="btn btn-danger px-4 py-2 fw-semibold" id="btn-cancel-settings" style="border-radius: 10px; font-size: 0.95rem; background: #ef4444; border: none;">ยกเลิก</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  const hash = window.location.hash.replace('#', '').trim();
+  let type = 'departments'; // default
+  let title = 'Department';
+
+  if (hash.includes('purposes')) {
+    type = 'objectives';
+    title = 'Objective';
+  } else if (hash.includes('locations')) {
+    type = 'locations';
+    title = 'Location';
+  } else if (hash.includes('classes')) {
+    type = 'classes';
+    title = 'ClassType';
+  }
+
+  $('#settings-title-type').text(title);
+
+  let activeItems = [];
+
+  // Map type to API endpoint
+  function getEndpoint(id) {
+    const base = {
+      departments: '/departments',
+      objectives:  '/objectives',
+      locations:   '/locations',
+      classes:     '/class-types'
+    }[type];
+    return id !== undefined ? `${base}/${id}` : base;
+  }
+
+  function loadSettingsData() {
+    App.API.get(getEndpoint())
+      .done(res => {
+        if (!res.success) return;
+        activeItems = res.data;
+        renderList();
+      })
+      .fail(() => App.Utils.showToast('โหลดข้อมูลไม่สำเร็จ', 'danger'));
+  }
+
+  function renderList() {
+    if (activeItems.length === 0) {
+      $('#settings-list-container').html('<div class="text-center py-4 text-muted">ไม่มีข้อมูลในตาราง</div>');
+      return;
+    }
+
+    const html = activeItems.map((item) => `
+      <div class="d-flex align-items-center gap-2 p-2 border-bottom border-light-subtle bg-white">
+        <input type="text" class="form-control form-control-sm border-light-subtle input-inline-edit" data-id="${item.id}" value="${item.name}" style="border-radius: 8px;">
+        <button class="btn btn-sm btn-purple text-white p-2 d-flex align-items-center justify-content-center" onclick="window.saveSingleInline(${item.id})" style="border-radius: 6px; background: #8b5cf6; border: none; width: 32px; height: 32px;"><i class="bi bi-pencil-square"></i></button>
+        <button class="btn btn-sm btn-danger text-white p-2 d-flex align-items-center justify-content-center" onclick="window.deleteSingleInline(${item.id})" style="border-radius: 6px; background: #ef4444; border: none; width: 32px; height: 32px;"><i class="bi bi-trash"></i></button>
+      </div>
+    `).join('');
+
+    $('#settings-list-container').html(html);
+  }
+
+  // Save single row inline
+  window.saveSingleInline = function(id) {
+    const input = $(`.input-inline-edit[data-id="${id}"]`);
+    const val = input.val().trim();
+    if (!val) { App.Utils.showToast('กรุณากรอกข้อมูล', 'warning'); return; }
+
+    App.API.put(getEndpoint(id), { name: val })
+      .done(res => {
+        if (res.success) {
+          App.Utils.showToast('อัปเดตข้อมูลเรียบร้อย', 'success');
+          const match = activeItems.find(x => x.id === id);
+          if (match) match.name = val;
+        } else {
+          App.Utils.showToast(res.message || 'บันทึกไม่สำเร็จ', 'danger');
+        }
+      });
+  };
+
+  // Delete single row
+  window.deleteSingleInline = function(id) {
+    if (!confirm('ยืนยันที่จะลบข้อมูลนี้หรือไม่?')) return;
+
+    App.API.del(getEndpoint(id))
+      .done(res => {
+        if (res.success) {
+          App.Utils.showToast('ลบข้อมูลเรียบร้อย', 'success');
+          loadSettingsData();
+        } else {
+          App.Utils.showToast(res.message || 'ลบไม่สำเร็จ', 'danger');
+        }
+      });
+  };
+
+  // Add new item
+  $('#btn-add-setting-item').on('click', function() {
+    const val = $('#input-new-item').val().trim();
+    if (!val) { App.Utils.showToast('กรุณากรอกข้อมูลก่อนกดเพิ่ม', 'warning'); return; }
+
+    App.API.post(getEndpoint(), { name: val })
+      .done(res => {
+        if (res.success) {
+          App.Utils.showToast('เพิ่มรายการเรียบร้อย', 'success');
+          $('#input-new-item').val('');
+          loadSettingsData();
+        } else {
+          App.Utils.showToast(res.message || 'เพิ่มไม่สำเร็จ', 'danger');
+        }
+      });
+  });
+
+  // Bulk Save — อัปเดตทุก row ที่มีการเปลี่ยนแปลง
+  $('#btn-save-settings-bulk').on('click', function() {
+    const tasks = [];
+    $('.input-inline-edit').each(function() {
+      const id = +$(this).data('id');
+      const val = $(this).val().trim();
+      const item = activeItems.find(x => x.id === id);
+      if (item && item.name !== val && val) {
+        tasks.push(App.API.put(getEndpoint(id), { name: val }));
+      }
+    });
+
+    if (tasks.length > 0) {
+      $.when(...tasks).then(() => {
+        App.Utils.showToast('บันทึกการเปลี่ยนแปลงทั้งหมดเรียบร้อย', 'success');
+        loadSettingsData();
+      });
+    } else {
+      App.Utils.showToast('ข้อมูลไม่มีการเปลี่ยนแปลง', 'info');
+    }
+  });
+
+  // Cancel / Reload
+  $('#btn-cancel-settings').on('click', function() {
+    loadSettingsData();
+    App.Utils.showToast('ยกเลิกการแก้ไขข้อมูล', 'info');
+  });
+
+  loadSettingsData();
+})();
+</script>
+

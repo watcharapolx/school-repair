@@ -1,0 +1,655 @@
+<div class="container-fluid">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center">
+      <a href="#repairs" class="btn btn-outline-secondary btn-sm me-3">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <div>
+        <h4 class="fw-bold mb-0">
+          <i class="bi bi-file-earmark-text text-primary me-2"></i>รายละเอียดใบแจ้งซ่อม
+        </h4>
+        <div class="text-muted" style="font-size: 0.85rem;" id="detail-id">-</div>
+      </div>
+    </div>
+    <div class="d-flex gap-2" id="detail-actions">
+      <!-- Dynamic buttons -->
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Main Info -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0"><i class="bi bi-info-circle me-2"></i>ข้อมูลทั่วไป</h5>
+          <span id="detail-status-badge"></span>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">เลขที่ใบแจ้งซ่อม</label>
+              <div class="fw-semibold" id="detail-repair-id">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">วันที่แจ้ง</label>
+              <div class="fw-semibold" id="detail-date">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">ผู้แจ้ง</label>
+              <div class="fw-semibold" id="detail-reporter">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">หน่วยงาน</label>
+              <div class="fw-semibold" id="detail-dept">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">เบอร์โทรศัพท์</label>
+              <div class="fw-semibold" id="detail-phone">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">สถานที่</label>
+              <div class="fw-semibold" id="detail-location">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">ประเภิครุภัณฑ์</label>
+              <div class="fw-semibold" id="detail-class">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">เลขครุภัณฑ์</label>
+              <div class="fw-semibold" id="detail-asset">-</div>
+            </div>
+            <div class="col-12">
+              <label class="text-muted" style="font-size: 0.8rem;">รายละเอียดปัญหา</label>
+              <div class="p-3 bg-light rounded-3" id="detail-detail">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Images -->
+      <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-images me-2"></i>รูปภาพประกอบ</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3" id="detail-images">
+            <div class="col-12 text-muted text-center py-4">ไม่มีรูปภาพ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Update (Staff only) -->
+      <div class="card border-0 shadow-sm mt-4 nav-staff-only" id="status-update-card">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-arrow-repeat me-2"></i>อัปเดตสถานะ</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">เปลี่ยนสถานะเป็น</label>
+              <select class="form-select" id="status-update-select">
+                <option value="">เลือกสถานะ</option>
+              </select>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">หมายเหนุ / รายละเอียด</label>
+              <input type="text" class="form-control" id="status-update-note" placeholder="เช่น ตรวจสอบแล้ว, อยู่ระหว่างซ่อม">
+            </div>
+            <div class="col-md-3">
+              <button type="button" class="btn btn-primary w-100" id="btn-update-status">
+                <i class="bi bi-check-lg me-1"></i>บันทึก
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spare Parts Requisition (Staff only) -->
+      <div class="card border-0 shadow-sm mt-4 nav-staff-only" id="withdraw-parts-card" style="display: none;">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2"></i>เบิกอะไหล่สถหรับงานซ่อม</h5>
+        </div>
+        <div class="card-body p-4">
+          <div id="withdraw-alert-container"></div>
+
+          <!-- Pending Withdraw List (Cart) -->
+          <div class="mb-4 p-3 bg-light rounded-3" id="pending-withdraw-section" style="display: none;">
+            <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-cart3 me-2"></i>รายการอะไหล่ที่จะเบิก</h6>
+            <div class="table-responsive mb-3">
+              <table class="table table-sm table-bordered bg-white align-middle text-center mb-0" style="font-size: 0.88rem;">
+                <thead class="table-light">
+                  <tr>
+                    <th>รหัสอะไหล่</th>
+                    <th>ชื่ออะไหล่</th>
+                    <th style="width: 120px;">จถนวนที่เลือก</th>
+                    <th style="width: 100px;">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="pending-withdraw-tbody">
+                  <!-- JS renders -->
+                </tbody>
+              </table>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button class="btn btn-success fw-bold" id="btn-confirm-withdraw-list">
+                <i class="bi bi-check-lg me-1"></i>ยืนยันการเบิกอะไหล่ทั้งหมด
+              </button>
+            </div>
+          </div>
+          
+          <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3" id="withdraw-parts-grid">
+            <!-- Cards rendered by JS -->
+          </div>
+
+          <hr class="my-4">
+
+          <h6 class="fw-bold mb-3">ประวันิการเบิกอะไหล่สถหรับใบแจ้งซ่อมนี้</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle text-center mb-0" style="font-size: 0.88rem;">
+              <thead class="table-light">
+                <tr>
+                  <th>วันที่เบิก</th>
+                  <th>รหัสอะไหล่</th>
+                  <th>ชื่ออะไหล่</th>
+                  <th>จถนวน</th>
+                  <th>ผู้เบิก</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawn-parts-tbody">
+                <tr><td colspan="5" class="text-center py-3 text-muted">ยังไม่มีการเบิกอะไหล่</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost & Problem (Completed) -->
+      <div class="card border-0 shadow-sm mt-4" id="cost-section" style="display: none;">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-cash-stack me-2"></i>ค่าใช้จ่ายและสรุป</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">ปัญหาที่พบ</label>
+              <div class="fw-semibold" id="detail-problem">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">รายการซ่อม</label>
+              <div class="fw-semibold" id="detail-repair-list">-</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">ค่าใช้จ่ายรวม</label>
+              <div class="fw-bold text-success fs-5" id="detail-cost">0 บาิ</div>
+            </div>
+            <div class="col-md-6">
+              <label class="text-muted" style="font-size: 0.8rem;">PDF ใบแจ้งซ่อม</label>
+              <div><a href="#" class="btn btn-sm btn-outline-danger" id="detail-pdf-btn" target="_blank">
+                <i class="bi bi-file-pdf me-1"></i>ดาวน์โหลด PDF
+              </a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="col-lg-4">
+      <!-- Assignment Info -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-person-check me-2"></i>ผู้รับผิดชอบ</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+              <i class="bi bi-person-gear fs-3 text-primary"></i>
+            </div>
+            <div>
+              <div class="fw-semibold" id="detail-assignee">รอตรวจสอบ</div>
+              <div class="text-muted" style="font-size: 0.8rem;" id="detail-assignee-role">-</div>
+            </div>
+          </div>
+          <div class="text-muted" style="font-size: 0.85rem;">
+            <i class="bi bi-calendar me-1"></i>วันที่รับงาน: <span id="detail-received">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Timeline -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>ประวันิสถานะ</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="timeline" id="status-timeline">
+            <!-- JS renders -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-lightning me-2"></i>ดำเนินการด่วน</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="d-grid gap-2">
+            <a href="#" class="btn btn-outline-primary" id="btn-print">
+              <i class="bi bi-printer me-2"></i>พิมพ์ใบแจ้งซ่อม
+            </a>
+            <a href="#" class="btn btn-outline-success" id="btn-line-notify">
+              <i class="bi bi-line me-2"></i>ส่งแจ้งเตือน LINE
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 4px; bottom: 4px;
+    width: 2px; background: #dee2e6;
+  }
+  .timeline-item { position: relative; margin-bottom: 16px; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -21px; top: 4px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--bs-primary); border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--bs-primary);
+  }
+  .timeline-item.completed::before { background: var(--bs-success); box-shadow: 0 0 0 2px var(--bs-success); }
+  .timeline-item.pending::before { background: var(--bs-warning); box-shadow: 0 0 0 2px var(--bs-warning); }
+</style>
+
+<script>
+(function() {
+  const repairId = App.state.currentRoute.split('/')[1];
+  $('#detail-id').text('เลขที่: ' + repairId);
+  $('#detail-pdf-btn').attr('href', `/api/repairs/${repairId}/pdf`);
+
+  let repairData = null;
+
+  function loadRepairDetails() {
+    App.API.getRepair(repairId)
+      .done(function(res) {
+        if (!res.success) {
+          App.Utils.showToast(res.message || 'โหลดข้อมูลล้มเหลว', 'danger');
+          return;
+        }
+
+        repairData = res.data;
+
+        // Fill data
+        $('#detail-repair-id').text(repairData.repair_id);
+        $('#detail-date').text(App.Utils.formatDateThai(repairData.reported_date));
+        $('#detail-reporter').text(repairData.reporter_name);
+        $('#detail-dept').text(repairData.department_name || '-');
+        $('#detail-phone').text(repairData.phone || '-');
+        $('#detail-location').text(repairData.location_name || '-');
+        $('#detail-class').text(repairData.class_type_name || '-');
+        $('#detail-asset').text(repairData.asset_no || '-');
+        $('#detail-detail').text(repairData.detail);
+        $('#detail-status-badge').html(App.Utils.getStatusBadge(repairData.status_id));
+        $('#detail-assignee').text(repairData.assignee_name || 'รอตรวจสอบ');
+        $('#detail-received').text(App.Utils.formatDateThai(repairData.received_date));
+
+        // Images
+        const imgUrls = [repairData.img1_url, repairData.img2_url, repairData.img3_url].filter(i => i);
+        const imgs = imgUrls.map(url => `
+          <div class="col-md-4">
+            <a href="${url}" target="_blank" class="d-block border rounded-3 overflow-hidden">
+              <img src="${url}" class="img-fluid w-100" style="height: 160px; object-fit: cover;" alt="Repair image">
+            </a>
+          </div>
+        `).join('');
+        $('#detail-images').html(imgs || '<div class="col-12 text-muted text-center py-4">ไม่มีรูปภาพ</div>');
+
+        // Timeline logs
+        const timeline = repairData.logs.map((log, i) => `
+          <div class="timeline-item ${i === repairData.logs.length - 1 ? 'completed' : ''}">
+            <div class="fw-semibold" style="font-size: 0.9rem;">${log.status_name}</div>
+            <div class="text-muted" style="font-size: 0.8rem;">${log.actor_name}</div>
+            <div class="text-primary" style="font-size: 0.85rem;">${log.action_detail || ''} ${log.note ? '(' + log.note + ')' : ''}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">${App.Utils.formatDateTimeThai(log.created_at)}</div>
+          </div>
+        `).join('');
+        $('#status-timeline').html(timeline);
+
+        // Status update options based on role and current status
+        $('#status-update-select').html('<option value="">เลือกสถานะใหม่</option>');
+        const nextStatuses = {
+          1: [2, 8], // แจ้งซ่อม -> กำลังดำเนินการ, ยกเลิกการซ่อม
+          2: [6, 3, 8], // กำลังดำเนินการ -> รออะไหล่, อยู่ระหว่างซ่อม, ยกเลิกการซ่อม
+          6: [2, 3], // รออะไหล่ -> กำลังดำเนินการ, อยู่ระหว่างซ่อม
+          3: [4, 5, 7], // อยู่ระหว่างซ่อม -> ซ่อมสำเร็จ, ซ่อมไม่สำเร็จ, ส่งซ่อมภายนอก
+        };
+
+        const allowed = nextStatuses[repairData.status_id] || [];
+        allowed.forEach(sid => {
+          const s = App.CONFIG.STATUSES.find(x => x.id === sid);
+          if (s) {
+            $('#status-update-select').append(`<option value="${sid}">${s.name}</option>`);
+          }
+        });
+
+        // Hide/Show update status card based on role (SuperAdmin/SuperUser only)
+        const isStaff = ['SuperAdmin', 'SuperUser'].includes(App.state.user?.status);
+        $('#status-update-card').toggle(isStaff && allowed.length > 0);
+
+        // Hide/Show parts withdrawal card (only when status is 8 'อยู่ระหว่างซ่อม', for staff)
+        if (isStaff && repairData.status_id === 3) {
+          $('#withdraw-parts-card').show();
+          loadSparePartsCards();
+          loadWithdrawnParts();
+        } else {
+          $('#withdraw-parts-card').hide();
+        }
+
+        // Show cost section if completed (status 4, 5, 7)
+        if ([4, 5, 7].includes(repairData.status_id)) {
+          $('#cost-section').show();
+          $('#detail-problem').text(repairData.problem || '-');
+          $('#detail-repair-list').text(repairData.repair_list || '-');
+          $('#detail-cost').text(parseFloat(repairData.cost || 0).toLocaleString('th-TH') + ' บาิ');
+        } else {
+          $('#cost-section').hide();
+        }
+
+        // Show delete button for admin
+        const isAdmin = App.state.user?.status === 'SuperAdmin';
+        $('#detail-actions').html('');
+        if (isAdmin) {
+          $('#detail-actions').html(`
+            <button class="btn btn-outline-danger" id="btn-delete">
+              <i class="bi bi-trash me-1"></i>ลบใบแจ้งซ่อม
+            </button>
+          `);
+
+          $('#btn-delete').on('click', function() {
+            if (confirm('คุณน้องการลบใบแจ้งซ่อมนี้ใช่หรือไม่? การกระิถนี้ไม่สามารถย้อนกลับได้')) {
+              App.API.del(`/repairs/${repairId}`)
+                .done(function() {
+                  App.Utils.showToast('ลบรายการแจ้งซ่อมสำเร็จ', 'success');
+                  App.Router.go('repairs');
+                })
+                .fail(function(err) {
+                  App.Utils.showToast('ไม่สามารถลบรายการได้', 'danger');
+                });
+            }
+          });
+        }
+      })
+      .fail(function(err) {
+        console.error('Error loading repair detail:', err);
+        App.Utils.showToast('เกิดข้อผิดพลาดในการโหลดรายละเอียด', 'danger');
+      });
+  }
+
+  function loadSparePartsCards() {
+    App.API.get('/spare-parts', { class_type_id: repairData ? repairData.class_type_id : '' })
+      .done(res => {
+        if (!res.success) return;
+        let html = '';
+        res.data.forEach(p => {
+          if (p.is_active && (!repairData.class_type_id || p.class_type_id == repairData.class_type_id)) {
+            const img = p.image_url || 'https://lh3.googleusercontent.com/d/1fZuqgA8gVY3trs8jiYoXmUpGuyuMSn7j';
+            const isDisabled = p.quantity <= 0 ? 'disabled' : '';
+            html += `
+              <div class="col">
+                <div class="card h-100 border-0 shadow-sm p-2" style="border: 1px solid var(--border-color) !important;">
+                  <img src="${img}" class="card-img-top rounded" style="height: 100px; object-fit: cover;" onerror="this.src='https://lh3.googleusercontent.com/d/1fZuqgA8gVY3trs8jiYoXmUpGuyuMSn7j'">
+                  <div class="card-body p-2 d-flex flex-column justify-content-between">
+                    <div>
+                      <div class="text-secondary small fw-bold">${p.code}</div>
+                      <h6 class="card-title fw-bold text-dark text-truncate mb-1" title="${p.name}" style="font-size: 0.9rem;">${p.name}</h6>
+                      <div class="small mb-2 ${p.quantity === 0 ? 'text-danger fw-bold' : 'text-muted'}" style="font-size: 0.8rem;">คงเหลือ: ${p.quantity} ชท้น</div>
+                    </div>
+                    <div>
+                      <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text px-1" style="font-size: 0.75rem;">จถนวน</span>
+                        <input type="number" class="form-control text-center" id="qty-${p.id}" value="1" min="1" max="${p.quantity}" ${isDisabled}>
+                      </div>
+                      <button class="btn btn-sm btn-outline-primary w-100 fw-bold btn-select-part" data-id="${p.id}" data-code="${p.code}" data-name="${p.name}" data-max="${p.quantity}" ${isDisabled} style="font-size: 0.75rem;">
+                        <i class="bi bi-plus-lg me-1"></i>เลือกใส่รายการ
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        });
+        $('#withdraw-parts-grid').html(html || '<div class="col-12 text-center text-muted py-4">ไม่มีรายการอะไหล่</div>');
+      });
+  }
+
+  function loadWithdrawnParts() {
+    App.API.get('/stock-transactions', { repair_id: repairId })
+      .done(res => {
+        if (!res.success) return;
+        let html = '';
+        if (res.data.length === 0) {
+          html = '<tr><td colspan="5" class="text-center py-3 text-muted">ยังไม่มีการเบิกอะไหล่</td></tr>';
+        } else {
+          res.data.forEach(st => {
+            html += `
+              <tr>
+                <td>${App.Utils.formatDateThai(st.transaction_date)}</td>
+                <td>${st.part_code || '-'}</td>
+                <td class="text-start">${st.part_name || '-'}</td>
+                <td>${st.quantity}</td>
+                <td>${st.created_by_name || '-'}</td>
+              </tr>
+            `;
+          });
+        }
+        $('#withdrawn-parts-tbody').html(html);
+      });
+  }
+
+  let pendingWithdrawList = [];
+
+  function renderPendingWithdrawList() {
+    if (pendingWithdrawList.length === 0) {
+      $('#pending-withdraw-section').hide();
+      $('#pending-withdraw-tbody').html('');
+      return;
+    }
+
+    let html = '';
+    pendingWithdrawList.forEach((item, index) => {
+      html += `
+        <tr>
+          <td class="fw-semibold text-secondary">${item.partCode}</td>
+          <td>${item.partName}</td>
+          <td>
+            <input type="number" class="form-control form-control-sm text-center mx-auto" style="width: 80px;" value="${item.quantity}" min="1" max="${item.maxQty}" onchange="window.updatePendingQty(${index}, this.value)">
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline-danger" onclick="window.removePendingPart(${index})">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    $('#pending-withdraw-tbody').html(html);
+    $('#pending-withdraw-section').show();
+  }
+
+  window.updatePendingQty = function(index, value) {
+    const qty = parseInt(value);
+    if (isNaN(qty) || qty <= 0) {
+      App.Utils.showToast('กรุณากรอกจถนวนที่ถูกน้อง', 'warning');
+      renderPendingWithdrawList();
+      return;
+    }
+    const item = pendingWithdrawList[index];
+    if (qty > item.maxQty) {
+      App.Utils.showToast(`จถนวนอะไหล่ไม่เพียงพอ (คงเหลือ: ${item.maxQty})`, 'warning');
+      renderPendingWithdrawList();
+      return;
+    }
+    item.quantity = qty;
+  };
+
+  window.removePendingPart = function(index) {
+    pendingWithdrawList.splice(index, 1);
+    renderPendingWithdrawList();
+  };
+
+  // Add Part to Pending List Click Event
+  $(document).off('click', '.btn-select-part').on('click', '.btn-select-part', function() {
+    const partId = $(this).data('id');
+    const partCode = $(this).data('code');
+    const partName = $(this).data('name');
+    const maxQty = parseInt($(this).data('max'));
+    const qtyInput = $(`#qty-${partId}`);
+    const qty = parseInt(qtyInput.val());
+
+    if (isNaN(qty) || qty <= 0) {
+      App.Utils.showToast('กรุณากรอกจถนวนที่ถูกน้อง', 'warning');
+      return;
+    }
+    if (qty > maxQty) {
+      App.Utils.showToast(`จถนวนอะไหล่ไม่เพียงพอ (คงเหลือ: ${maxQty})`, 'warning');
+      return;
+    }
+
+    // Check if already in list
+    const existing = pendingWithdrawList.find(x => x.spare_part_id === partId);
+    if (existing) {
+      const newQty = existing.quantity + qty;
+      if (newQty > maxQty) {
+        App.Utils.showToast(`จถนวนอะไหล่ที่จะเบิกสะสม (${newQty}) เกินกว่าที่มีอยู่ (${maxQty})`, 'warning');
+        return;
+      }
+      existing.quantity = newQty;
+    } else {
+      pendingWithdrawList.push({
+        spare_part_id: partId,
+        partCode: partCode,
+        partName: partName,
+        quantity: qty,
+        maxQty: maxQty
+      });
+    }
+
+    App.Utils.showToast(`เพท่ม ${partName} ลงในรายการเบิกแล้ว`, 'success');
+    renderPendingWithdrawList();
+  });
+
+  // Confirm Requisition List Click Event
+  $('#btn-confirm-withdraw-list').on('click', function() {
+    if (pendingWithdrawList.length === 0) {
+      App.Utils.showToast('ไม่มีรายการอะไหล่ให้เบิก', 'warning');
+      return;
+    }
+
+    if (!confirm('ยืนยันที่จะเบิกอะไหล่ทั้งหมดนามรายการนี้ใช่หรือไม่?')) {
+      return;
+    }
+
+    const itemsToSend = pendingWithdrawList.map(x => ({
+      spare_part_id: x.spare_part_id,
+      quantity: x.quantity
+    }));
+
+    const detailText = pendingWithdrawList.map(x => `${x.partCode} (${x.quantity} ชท้น)`).join(', ');
+
+    App.Utils.showLoader(true);
+    App.API.post('/stock-transactions/withdraw', {
+      items: itemsToSend,
+      repair_id: repairId,
+      note: 'เบิกอะไหล่สะสมระหว่างซ่อม'
+    })
+    .done(res => {
+      if (res.success) {
+        alert('เบิกอะไหล่แล้ว');
+        // Auto-update status to "รออะไหล่" (Status ID: 3)
+        App.API.updateStatus(repairId, 6, `เบิกอะไหล่สะสม: ${detailText}`)
+          .done(() => {
+            // Show dynamic Alert at top of card container
+            $('#withdraw-alert-container').html(`
+              <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-check-circle-fill fs-5"></i>
+                <div style="font-size: 0.9rem;">
+                  เบิกอะไหล่สะสมสำเร็จ! (ระบบปรับสถานะเป็น "รออะไหล่/สั่งซื้ออะไหล่" เรียบร้อยแล้ว)
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            `);
+            App.Utils.showToast('เบิกอะไหล่ทั้งหมดสำเร็จ', 'success');
+            pendingWithdrawList = [];
+            renderPendingWithdrawList();
+            loadRepairDetails();
+          })
+          .fail(() => {
+            App.Utils.showToast('เบิกอะไหล่สำเร็จ แต่ไม่สามารถอัปเดตสถานะได้', 'warning');
+            pendingWithdrawList = [];
+            renderPendingWithdrawList();
+            loadRepairDetails();
+          });
+      } else {
+        App.Utils.showToast(res.message || 'เบิกอะไหล่ล้มเหลว', 'danger');
+      }
+    })
+    .fail(err => {
+      console.error('Error batch withdrawing:', err);
+      App.Utils.showToast('เกิดข้อผิดพลาดในการเบิกอะไหล่', 'danger');
+    })
+    .always(() => {
+      App.Utils.showLoader(false);
+    });
+  });
+
+  // Update status
+  $('#btn-update-status').on('click', function() {
+    const newStatus = $('#status-update-select').val();
+    const note = $('#status-update-note').val();
+    if (!newStatus) {
+      App.Utils.showToast('กรุณาเลือกสถานะ', 'warning');
+      return;
+    }
+
+    App.API.updateStatus(repairId, newStatus, note)
+      .done(function(res) {
+        if (res.success) {
+          App.Utils.showToast('อัปเดตสถานะสำเร็จ', 'success');
+          $('#status-update-note').val('');
+          App.Router.go('repairs');
+        } else {
+          App.Utils.showToast(res.message || 'อัปเดตล้มเหลว', 'danger');
+        }
+      })
+      .fail(function(err) {
+        App.Utils.showToast('เกิดข้อผิดพลาดในการอัปเดตสถานะ', 'danger');
+      });
+  });
+
+  $('#btn-print').on('click', e => { e.preventDefault(); window.print(); });
+
+  $('#btn-line-notify').on('click', function(e) {
+    e.preventDefault();
+    App.Utils.showLoader(true);
+    App.API.post(`/repairs/${repairId}/line-notify`)
+      .done(function(res) {
+        App.Utils.showToast(res.message || 'ส่งแจ้งเตือนสำเร็จ', 'success');
+      })
+      .fail(function(xhr) {
+        const errMsg = xhr.responseJSON?.message || 'ส่งแจ้งเตือนล้มเหลว';
+        App.Utils.showToast(errMsg, 'danger');
+      })
+      .always(() => App.Utils.showLoader(false));
+  });
+
+  // Initial load
+  loadRepairDetails();
+})();
+</script>
+

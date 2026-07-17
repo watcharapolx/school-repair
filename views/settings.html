@@ -1,0 +1,292 @@
+<div class="container-fluid">
+  <h4 class="fw-bold mb-4">
+    <i class="bi bi-gear text-primary me-2"></i>ตั้งค่าระบบ
+  </h4>
+
+  <div class="row g-4">
+    <!-- System Settings -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-sliders me-2"></i>ข้อมูลระบบ</h5>
+        </div>
+        <div class="card-body p-4">
+          <form id="settings-form">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">ชื่อระบบ (ภาษาไทย)</label>
+              <input type="text" class="form-control" id="sys-name-th" value="ระบบแจ้งซ่อมบำรุงในสถานศึกษา">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">ชื่อระบบ (ภาษาอังกฤษ)</label>
+              <input type="text" class="form-control" id="sys-name-en" value="ระบบแจ้งซ่อม">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">URL Logo</label>
+              <input type="url" class="form-control" id="sys-logo" value="https://cdn.jsdelivr.net/gh/Watchpolhtc/image/Logo1.png">
+              <div class="mt-2">
+                <img src="https://cdn.jsdelivr.net/gh/Watchpolhtc/image/Logo1.png" height="40" alt="Logo preview" onerror="this.style.display='none'">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Google Drive Folder (ข้อมูล)</label>
+              <input type="text" class="form-control" id="sys-folder-data" value="1yD5W0MiupOwnGrvfkyBGz3g-4I81cxXaUT380A8OGe4">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Google Drive Folder (รายงาน)</label>
+              <input type="text" class="form-control" id="sys-folder-rep" value="1SaQB71sua62oHV2zlGpdN7gKuh1--NX9">
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save me-2"></i>บันทึกการตั้งค่า
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- User Profile Card -->
+      <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-person-bounding-box me-2"></i>ข้อมูลส่วนตัวผู้ใช้งาน</h5>
+        </div>
+        <div class="card-body p-4">
+          <form id="profile-form" enctype="multipart/form-data">
+            <div class="mb-3 text-center">
+              <div class="position-relative d-inline-block">
+                <img src="/public/images/no-image.png" id="profile-avatar-preview" class="rounded-circle shadow-sm border" style="width: 100px; height: 100px; object-fit: cover;" onerror="this.src='https://cdn.jsdelivr.net/gh/EPICCODING17/image/user-37.png'">
+                <label for="profile-avatar-file" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle p-1 d-flex align-items-center justify-content-center" style="width:30px; height:30px; cursor:pointer;">
+                  <i class="bi bi-camera"></i>
+                </label>
+                <input type="file" id="profile-avatar-file" class="d-none" accept="image/*">
+              </div>
+              <div class="form-text mt-1">อัปเดตรูปภาพโปรไฟล์ได้ที่นี่</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">ชื่อ-นามสกุล</label>
+              <input type="text" class="form-control" id="profile-fullname" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">เบอร์โทรศัพท์</label>
+              <input type="tel" class="form-control" id="profile-phone" maxlength="10">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">อีเมล</label>
+              <input type="email" class="form-control" id="profile-email">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">รหัสผ่านใหม่ (หากต้องการเปลี่ยน)</label>
+              <input type="password" class="form-control" id="profile-password" placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-success w-100">
+              <i class="bi bi-save me-2"></i>บันทึกข้อมูลส่วนตัว
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- LINE Notify -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-line me-2"></i>LINE Notify</h5>
+        </div>
+        <div class="card-body p-4">
+          <form id="line-form">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">LINE Notify Token</label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="line-token" placeholder="กรอก LINE Notify Token">
+                <button class="btn btn-outline-secondary" type="button" id="btn-toggle-token">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+              <div class="form-text">Token สำหรับส่งแจ้งเตือนไปยังกลุ่ม LINE</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">ข้อความทดสอบ</label>
+              <input type="text" class="form-control" id="line-test-msg" value="ทดสอบการแจ้งเตือนจากระบบแจ้งซ่อม">
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-success" id="btn-test-line">
+                <i class="bi bi-send me-2"></i>ทดสอบส่งข้อความ
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-2"></i>บันทึก Token
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Master Data Management -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-database me-2"></i>ข้อมูลพื้นฐาน</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="list-group list-group-flush">
+            <a href="#settings/departments" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+              <div><i class="bi bi-building me-2 text-primary"></i>จัดการหน่วยงาน</div>
+              <i class="bi bi-chevron-right text-muted"></i>
+            </a>
+            <a href="#settings/locations" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+              <div><i class="bi bi-geo-alt me-2 text-primary"></i>จัดการสถานที่</div>
+              <i class="bi bi-chevron-right text-muted"></i>
+            </a>
+            <a href="#settings/classes" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+              <div><i class="bi bi-tags me-2 text-primary"></i>จัดการหมวดหมู่ครุภัณฑ์</div>
+              <i class="bi bi-chevron-right text-muted"></i>
+            </a>
+            <a href="#settings/purposes" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+              <div><i class="bi bi-flag me-2 text-primary"></i>จัดการวัตถุประสงค์การแจ้งซ่อม</div>
+              <i class="bi bi-chevron-right text-muted"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Load settings on init
+  App.API.get('/settings')
+    .done(function(res) {
+      if (res.success && res.data) {
+        const s = res.data;
+        $('#sys-name-th').val(s.app_name_th || '');
+        $('#sys-name-en').val(s.app_name_en || '');
+        $('#sys-logo').val(s.app_logo || '');
+        $('#sys-folder-data').val(s.google_drive_folder_data || '');
+        $('#sys-folder-rep').val(s.google_drive_folder_reports || '');
+        $('#line-token').val(s.line_notify_token || '');
+      }
+    });
+
+  // Load user profile on init
+  if (App.state.user) {
+    const u = App.state.user;
+    $('#profile-fullname').val(u.fullname || '');
+    $('#profile-phone').val(u.phone || '');
+    $('#profile-email').val(u.email || '');
+    if (u.avatar_url) {
+      $('#profile-avatar-preview').attr('src', u.avatar_url);
+    }
+  }
+
+  // Profile image file preview
+  $('#profile-avatar-file').on('change', function() {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        $('#profile-avatar-preview').attr('src', e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Submit profile settings
+  $('#profile-form').on('submit', function(e) {
+    e.preventDefault();
+    const fullname = $('#profile-fullname').val().trim();
+    const phone = $('#profile-phone').val().trim();
+    const email = $('#profile-email').val().trim();
+    const password = $('#profile-password').val().trim();
+    const avatarFile = $('#profile-avatar-file')[0].files[0];
+
+    if (!fullname) {
+      App.Utils.showToast('กรุณากรอกชื่อ-นามสกุล', 'warning');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('fullname', fullname);
+    formData.append('phone', phone);
+    formData.append('email', email);
+    if (password) {
+      formData.append('password', password);
+    }
+    if (avatarFile) {
+      formData.append('avatar', avatarFile);
+    }
+
+    App.Utils.showLoader(true);
+    $.ajax({
+      url: '/api/auth/profile',
+      type: 'PUT',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(res) {
+        if (res.success) {
+          App.Utils.showToast('อัปเดตข้อมูลส่วนตัวสำเร็จ', 'success');
+          // Update local state
+          App.state.user = res.user;
+          // Refresh sidebar
+          if (typeof App.updateSidebar === 'function') {
+            App.updateSidebar();
+          } else {
+            // fallback
+            const initials = (res.user.fullname || res.user.username || 'U').charAt(0).toUpperCase();
+            $('#nav-avatar-initials').text(initials);
+            $('#nav-fullname').text(res.user.fullname || res.user.username);
+          }
+          $('#profile-password').val('');
+        } else {
+          App.Utils.showToast(res.message || 'อัปเดตข้อมูลล้มเหลว', 'danger');
+        }
+      },
+      error: function() {
+        App.Utils.showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'danger');
+      },
+      complete: function() {
+        App.Utils.showLoader(false);
+      }
+    });
+  });
+
+  $('#settings-form').on('submit', function(e) {
+    e.preventDefault();
+    const data = {
+      app_name_th: $('#sys-name-th').val().trim(),
+      app_name_en: $('#sys-name-en').val().trim(),
+      app_logo: $('#sys-logo').val().trim(),
+      google_drive_folder_data: $('#sys-folder-data').val().trim(),
+      google_drive_folder_reports: $('#sys-folder-rep').val().trim()
+    };
+    App.API.put('/settings', data)
+      .done(() => App.Utils.showToast('บันทึกการตั้งค่าสำเร็จ', 'success'))
+      .fail(() => App.Utils.showToast('บันทึกการตั้งค่าล้มเหลว', 'danger'));
+  });
+
+  $('#line-form').on('submit', function(e) {
+    e.preventDefault();
+    const token = $('#line-token').val().trim();
+    App.API.put('/settings', { line_notify_token: token })
+      .done(() => App.Utils.showToast('บันทึก LINE Token สำเร็จ', 'success'))
+      .fail(() => App.Utils.showToast('บันทึก LINE Token ล้มเหลว', 'danger'));
+  });
+
+  $('#btn-test-line').on('click', function() {
+    const msg = $('#line-test-msg').val().trim();
+    if (!msg) {
+      App.Utils.showToast('กรุณากรอกข้อความทดสอบ', 'warning');
+      return;
+    }
+    App.API.post('/settings/line-notify/test', { message: msg })
+      .done(() => App.Utils.showToast('ส่งข้อความทดสอบสำเร็จ', 'success'))
+      .fail((xhr) => {
+        const errMsg = xhr.responseJSON?.message || 'ส่งข้อความทดสอบล้มเหลว';
+        App.Utils.showToast(errMsg, 'danger');
+      });
+  });
+
+  $('#btn-toggle-token').on('click', function() {
+    const $input = $('#line-token');
+    const type = $input.attr('type') === 'password' ? 'text' : 'password';
+    $input.attr('type', type);
+    $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+  });
+})();
+</script>

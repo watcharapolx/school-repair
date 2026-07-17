@@ -1,0 +1,419 @@
+<div class="container-fluid">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <h4 class="fw-bold mb-0">
+      <i class="bi bi-people text-primary me-2"></i>จัดการผู้ใช้
+    </h4>
+    <button class="btn btn-primary" id="btn-open-add-modal">
+      <i class="bi bi-person-plus me-1"></i>เพิ่มผู้ใช้
+    </button>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-2 px-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-5">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control border-0 bg-light" id="user-search" placeholder="ค้นหาชื่อ, ชื่อผู้ใช้, เบอร์โทร...">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select form-select-sm border-0 bg-light" id="filter-role">
+            <option value="">สิทธิ์ทั้งหมด</option>
+            <option value="SuperAdmin">SuperAdmin</option>
+            <option value="SuperUser">SuperUser</option>
+            <option value="User">User</option>
+            <option value="inactive">inactive</option>
+          </select>
+        </div>
+        <div class="col-md-4 text-end">
+          <span class="text-muted small" id="user-count-label">ผู้ใช้ทั้งหมด: 0 คน</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">ผู้ใช้</th>
+              <th>ชื่อ-นามสกุล</th>
+              <th>หน่วยงาน</th>
+              <th>ติดต่อ</th>
+              <th>สิทธิ์</th>
+              <th class="pe-4 text-end">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="6" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     Modal: User Form (Add / Edit) — Full Fields
+     ════════════════════════════════════════════════ -->
+<div class="modal fade" id="modal-user-form" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold" id="modal-user-title"><i class="bi bi-person-plus me-2"></i>เพิ่มผู้ใช้</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="user-submit-form" novalidate>
+          <div class="row g-3">
+
+            <!-- Section: บัญชีผู้ใช้ -->
+            <div class="col-12">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-person-badge text-primary"></i>
+                <span class="fw-semibold text-primary" style="font-size:0.9rem;">ข้อมูลบัญชี</span>
+                <hr class="flex-grow-1 my-0">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">ชื่อผู้ใช้ <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="user-username" required placeholder="username">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" id="label-password">รหัสผ่าน <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="user-password" placeholder="••••••••">
+                <button class="btn btn-outline-secondary btn-toggle-pw" type="button" data-target="user-password">
+                  <i class="bi bi-eye toggle-icon"></i>
+                </button>
+              </div>
+              <div class="form-text text-muted d-none" id="password-help">เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="user-fullname" required placeholder="ชื่อ นามสกุล">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">สิทธิ์ <span class="text-danger">*</span></label>
+              <select class="form-select" id="user-role" required>
+                <option value="User">User (ผู้แจ้งซ่อม)</option>
+                <option value="SuperUser">SuperUser (ช่างซ่อม)</option>
+                <option value="SuperAdmin">SuperAdmin (ผู้ดูแลระบบ)</option>
+                <option value="inactive">inactive (ระงับการใช้งาน)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">หน่วยงาน</label>
+              <select class="form-select" id="user-dept">
+                <option value="">เลือกหน่วยงาน</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">สถานที่ประจำอยู่ห้อง</label>
+              <select class="form-select" id="user-loc">
+                <option value="">เลือกสถานที่</option>
+              </select>
+            </div>
+
+            <!-- Section: ข้อมูลติดต่อ -->
+            <div class="col-12 mt-2">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-telephone text-success"></i>
+                <span class="fw-semibold text-success" style="font-size:0.9rem;">ข้อมูลติดต่อ</span>
+                <hr class="flex-grow-1 my-0">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">เบอร์โทรศัพท์</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                <input type="tel" class="form-control" id="user-phone" placeholder="0xx-xxx-xxxx" maxlength="10">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">อีเมล</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input type="email" class="form-control" id="user-email" placeholder="email@example.com">
+              </div>
+            </div>
+
+            <!-- Section: เพิ่มเติม -->
+            <div class="col-12 mt-2">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-gear text-secondary"></i>
+                <span class="fw-semibold text-secondary" style="font-size:0.9rem;">ข้อมูลเพิ่มเติม</span>
+                <hr class="flex-grow-1 my-0">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">LINE Token</label>
+              <div class="input-group">
+                <span class="input-group-text bg-success text-white"><i class="bi bi-chat-dots"></i></span>
+                <input type="text" class="form-control" id="user-token" placeholder="LINE Notify Token (ถ้ามี)">
+              </div>
+              <div class="form-text text-muted">ใช้สำหรับแจ้งเตือนผ่าน LINE</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">URL รูปโปรไฟล์</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-image"></i></span>
+                <input type="url" class="form-control" id="user-avatar" placeholder="https://...">
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer border-top-0 pt-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button type="button" class="btn btn-primary px-4" id="btn-save-user">
+          <span class="spinner-border spinner-border-sm d-none me-1" id="save-user-spinner"></span>
+          <i class="bi bi-save me-1"></i>บันทึก
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let usersList = [];
+  let editingUserId = null;
+
+  const roleBadges = {
+    SuperAdmin: 'bg-danger',
+    SuperUser:  'bg-info text-dark',
+    User:       'bg-secondary',
+    inactive:   'bg-dark'
+  };
+  const roleLabels = {
+    SuperAdmin: 'SuperAdmin',
+    SuperUser:  'SuperUser',
+    User:       'User',
+    inactive:   'inactive'
+  };
+
+  const userModal = new bootstrap.Modal(document.getElementById('modal-user-form'));
+
+  // ─── Fetch users ───────────────────────────────────────────────────────────
+  function fetchUsers() {
+    App.API.get('/users')
+      .done(res => {
+        if (!res.success) return;
+        usersList = res.data;
+        applyFilters();
+      })
+      .fail(() => App.Utils.showToast('โหลดข้อมูลผู้ใช้ล้มเหลว', 'danger'));
+  }
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+  function renderUsers(list) {
+    $('#user-count-label').text(`ผู้ใช้ทั้งหมด: ${list.length} คน`);
+    if (!list.length) {
+      $('#users-tbody').html('<tr><td colspan="6" class="text-center py-4 text-muted">ไม่พบข้อมูลผู้ใช้</td></tr>');
+      return;
+    }
+    const html = list.map(u => `
+      <tr>
+        <td class="ps-4">
+          <div class="d-flex align-items-center gap-2">
+            <img src="${u.avatar_url || 'https://cdn.jsdelivr.net/gh/EPICCODING17/image/user-37.png'}"
+                 class="rounded-circle border" style="width:40px;height:40px;object-fit:cover;"
+                 onerror="this.src='https://cdn.jsdelivr.net/gh/EPICCODING17/image/user-37.png'">
+            <div>
+              <div class="fw-semibold">${u.username}</div>
+              <div class="text-muted" style="font-size:0.73rem;">${u.id}</div>
+            </div>
+          </div>
+        </td>
+        <td>${u.fullname}</td>
+        <td style="font-size:0.88rem;">
+          <div>${u.department_name || '<span class="text-muted">-</span>'}</div>
+          ${u.location_name ? `<div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-geo-alt me-1"></i>${u.location_name}</div>` : ''}
+        </td>
+        <td style="font-size:0.85rem;">
+          ${u.phone ? `<div><i class="bi bi-telephone me-1 text-success"></i>${u.phone}</div>` : ''}
+          ${u.email ? `<div><i class="bi bi-envelope me-1 text-primary"></i>${u.email}</div>` : ''}
+          ${!u.phone && !u.email ? '<span class="text-muted">-</span>' : ''}
+        </td>
+        <td><span class="badge ${roleBadges[u.status] || 'bg-secondary'}">${roleLabels[u.status] || u.status}</span></td>
+        <td class="pe-4 text-end">
+          <button class="btn btn-sm btn-outline-primary me-1" title="แก้ไข" onclick="window.editUser('${u.id}')"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger" title="ลบ" onclick="window.deleteUser('${u.id}')"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>
+    `).join('');
+    $('#users-tbody').html(html);
+  }
+
+  // ─── Filter / Search ───────────────────────────────────────────────────────
+  function applyFilters() {
+    const q     = $('#user-search').val().toLowerCase();
+    const role  = $('#filter-role').val();
+    const list  = usersList.filter(u => {
+      const matchQ    = !q || u.username.toLowerCase().includes(q) || u.fullname.toLowerCase().includes(q) || (u.phone||'').includes(q) || (u.email||'').toLowerCase().includes(q);
+      const matchRole = !role || u.status === role;
+      return matchQ && matchRole;
+    });
+    renderUsers(list);
+  }
+
+  $('#user-search').on('input', applyFilters);
+  $('#filter-role').on('change', applyFilters);
+
+  // ─── Load Departments ──────────────────────────────────────────────────────
+  App.API.get('/departments').done(res => {
+    if (!res.success) return;
+    res.data.forEach(d => $('#user-dept').append(`<option value="${d.id}">${d.name}</option>`));
+  });
+
+  // ─── Load Locations ────────────────────────────────────────────────────────
+  App.API.get('/locations').done(res => {
+    if (!res.success) return;
+    res.data.forEach(l => $('#user-loc').append(`<option value="${l.id}">${l.name}</option>`));
+  });
+
+  // ─── Open Modal (Add) ──────────────────────────────────────────────────────
+  $('#btn-open-add-modal').on('click', function() {
+    editingUserId = null;
+    $('#user-submit-form')[0].reset();
+    $('#modal-user-title').html('<i class="bi bi-person-plus me-2"></i>เพิ่มผู้ใช้');
+    $('#label-password').html('รหัสผ่าน <span class="text-danger">*</span>');
+    $('#user-password').attr({ type: 'password', required: true });
+    $('#password-help').addClass('d-none');
+    $('.toggle-icon').removeClass('bi-eye-slash').addClass('bi-eye');
+    userModal.show();
+  });
+
+  // ─── Open Modal (Edit) ────────────────────────────────────────────────────
+  window.editUser = function(userId) {
+    const u = usersList.find(x => x.id === userId);
+    if (!u) return;
+
+    editingUserId = userId;
+    // Basic
+    $('#user-username').val(u.username);
+    $('#user-fullname').val(u.fullname);
+    $('#user-dept').val(u.department_id || '');
+    $('#user-loc').val(u.location_id || '');
+    $('#user-role').val(u.status);
+    // Contact
+    $('#user-phone').val(u.phone || '');
+    $('#user-email').val(u.email || '');
+    // Extra
+    $('#user-token').val(u.token || '');
+    $('#user-avatar').val(u.avatar_url || '');
+    // Password (optional on edit)
+    $('#user-password').val('').removeAttr('required').attr('type', 'password');
+    $('.toggle-icon').removeClass('bi-eye-slash').addClass('bi-eye');
+
+    $('#modal-user-title').html('<i class="bi bi-pencil-square me-2"></i>แก้ไขผู้ใช้');
+    $('#label-password').html('รหัสผ่านใหม่ (ไม่บังคับ)');
+    $('#password-help').removeClass('d-none');
+    userModal.show();
+  };
+
+  // ─── Delete ───────────────────────────────────────────────────────────────
+  window.deleteUser = function(userId) {
+    if (!confirm('ยืนยันว่าต้องการลบผู้ใช้นี้หรือไม่?')) return;
+    App.API.del(`/users/${userId}`)
+      .done(res => {
+        if (res.success) {
+          App.Utils.showToast('ลบผู้ใช้สำเร็จ', 'success');
+          fetchUsers();
+        } else {
+          App.Utils.showToast(res.message || 'ลบไม่สำเร็จ', 'danger');
+        }
+      });
+  };
+
+  // ─── Toggle Password Visibility ──────────────────────────────────────────
+  $(document).on('click', '.btn-toggle-pw', function() {
+    const input = $('#' + $(this).data('target'));
+    const icon  = $(this).find('.toggle-icon');
+    if (input.attr('type') === 'password') {
+      input.attr('type', 'text');
+      icon.removeClass('bi-eye').addClass('bi-eye-slash');
+    } else {
+      input.attr('type', 'password');
+      icon.removeClass('bi-eye-slash').addClass('bi-eye');
+    }
+  });
+
+  // ─── Save ─────────────────────────────────────────────────────────────────
+  $('#btn-save-user').on('click', function() {
+    const username   = $('#user-username').val().trim();
+    const password   = $('#user-password').val().trim();
+    const fullname   = $('#user-fullname').val().trim();
+    const deptId     = $('#user-dept').val();
+    const locId      = $('#user-loc').val();
+    const status     = $('#user-role').val();
+    const phone      = $('#user-phone').val().trim();
+    const email      = $('#user-email').val().trim();
+    const token      = $('#user-token').val().trim();
+    const avatar_url = $('#user-avatar').val().trim();
+
+    if (!username || !fullname) {
+      App.Utils.showToast('กรุณากรอกชื่อผู้ใช้และชื่อ-นามสกุล', 'warning');
+      return;
+    }
+    if (!editingUserId && !password) {
+      App.Utils.showToast('กรุณากรอกรหัสผ่านสำหรับผู้ใช้ใหม่', 'warning');
+      return;
+    }
+
+    const payload = {
+      username,
+      fullname,
+      department_id: deptId ? parseInt(deptId) : null,
+      location_id:   locId ? parseInt(locId) : null,
+      status,
+      phone:      phone      || null,
+      email:      email      || null,
+      token:      token      || null,
+      avatar_url: avatar_url || null,
+    };
+    if (password) payload.password = password;
+
+    $('#save-user-spinner').removeClass('d-none');
+    $('#btn-save-user').prop('disabled', true);
+
+    const req = editingUserId
+      ? App.API.put(`/users/${editingUserId}`, payload)
+      : App.API.post('/users', payload);
+
+    req.done(res => {
+        if (res.success) {
+          App.Utils.showToast(editingUserId ? 'แก้ไขข้อมูลสำเร็จ' : 'เพิ่มผู้ใช้สำเร็จ', 'success');
+          userModal.hide();
+          fetchUsers();
+        } else {
+          App.Utils.showToast(res.message || 'บันทึกไม่สำเร็จ', 'danger');
+        }
+      })
+      .fail(err => App.Utils.showToast(err.responseJSON?.message || 'เกิดข้อผิดพลาด', 'danger'))
+      .always(() => {
+        $('#save-user-spinner').addClass('d-none');
+        $('#btn-save-user').prop('disabled', false);
+      });
+  });
+
+  // ─── Init ─────────────────────────────────────────────────────────────────
+  fetchUsers();
+})();
+</script>

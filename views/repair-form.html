@@ -1,0 +1,484 @@
+<div class="container-fluid">
+  <div class="d-flex align-items-center mb-4">
+    <a href="#repairs" class="btn btn-outline-secondary btn-sm me-3">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <h4 class="fw-bold mb-0">
+      <i class="bi bi-plus-circle text-primary me-2"></i>แจ้งซ่อมใหม่
+    </h4>
+  </div>
+
+  <!-- Reporter info loading alert -->
+  <div id="reporter-loading-alert" class="alert alert-info d-flex align-items-center gap-2 py-2 mb-3" role="alert">
+    <span class="spinner-border spinner-border-sm" role="status"></span>
+    <span>กำลังโหลดข้อมูลผู้แจ้งจากฐานข้อมูล...</span>
+  </div>
+
+  <form id="repair-form" class="needs-validation" novalidate>
+    <div class="row g-4">
+      <!-- Main Form Column -->
+      <div class="col-lg-10 mx-auto">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-bottom py-3 d-flex align-items-center gap-2">
+            <h5 class="fw-bold mb-0"><i class="bi bi-info-circle me-2"></i>ข้อมูลการแจ้งซ่อม</h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+
+              <!-- Repair ID & Date -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">เลขที่ใบแจ้งซ่อม</label>
+                <input type="text" class="form-control bg-light" id="repair-id" readonly>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">วันที่แจ้ง</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-calendar3 text-primary"></i></span>
+                  <input type="date" class="form-control bg-light fw-semibold" id="repair-date" readonly required>
+                </div>
+                <div class="form-text text-muted" style="font-size:0.76rem;">
+                  <i class="bi bi-info-circle me-1"></i>วันที่แจ้งซ่อม = วันที่เปิดใบแจ้งซ่อม (กำหนดโดยระบบ)
+                </div>
+              </div>
+
+              <!-- Reporter name (readonly — from DB) -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">ชื่อผู้แจ้ง <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-person-fill text-primary"></i></span>
+                  <input type="text" class="form-control bg-light fw-semibold" id="repair-reporter"
+                         placeholder="กำลังโหลด..." readonly required>
+                  <span class="input-group-text bg-light px-2" id="reporter-status-icon" title="กำลังโหลดข้อมูล...">
+                    <span class="spinner-border spinner-border-sm text-secondary" id="reporter-spinner"></span>
+                  </span>
+                </div>
+                <div class="form-text text-muted" style="font-size:0.76rem;">
+                  <i class="bi bi-lock me-1"></i>ดึงจากบัญชีผู้ใช้ที่เข้าสู่ระบบ
+                </div>
+              </div>
+
+              <!-- Department (readonly — from DB) -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">หน่วยงาน <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-building text-primary"></i></span>
+                  <input type="text" class="form-control bg-light fw-semibold" id="repair-dept-display"
+                         placeholder="กำลังโหลด..." readonly>
+                  <input type="hidden" id="repair-dept" required>
+                </div>
+                <div class="form-text text-muted" style="font-size:0.76rem;">
+                  <i class="bi bi-lock me-1"></i>ดึงจากบัญชีผู้ใช้ที่เข้าสู่ระบบ
+                </div>
+              </div>
+
+              <!-- Phone (readonly — from DB) -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">เบอร์โทรศัพท์</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-telephone-fill text-primary"></i></span>
+                  <input type="tel" class="form-control bg-light fw-semibold" id="repair-phone"
+                         placeholder="กำลังโหลด..." readonly maxlength="10">
+                </div>
+                <div class="form-text text-muted" style="font-size:0.76rem;">
+                  <i class="bi bi-lock me-1"></i>ดึงจากบัญชีผู้ใช้ที่เข้าสู่ระบบ
+                </div>
+              </div>
+
+              <!-- Location (readonly — from DB) -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">สถานที่ <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-geo-alt-fill text-primary"></i></span>
+                  <input type="text" class="form-control bg-light fw-semibold" id="repair-location-display"
+                         placeholder="กำลังโหลด..." readonly required>
+                  <input type="hidden" id="repair-location" required>
+                </div>
+                <div class="form-text text-muted" style="font-size:0.76rem;">
+                  <i class="bi bi-lock me-1"></i>ดึงจากบัญชีผู้ใช้ที่เข้าสู่ระบบ
+                </div>
+              </div>
+
+              <!-- ระบุคอมพิวเตอร์/ครุภัณฑ์ที่มีปัญหา -->
+              <div class="col-12" id="asset-select-group">
+                <label class="form-label fw-semibold text-primary"><i class="bi bi-pc-display-horizontal me-1"></i>เลือกเครื่องคอมพิวเตอร์/ครุภัณฑ์ที่มีปัญหาประจำห้อง</label>
+                <select class="form-select border-primary fw-semibold" id="repair-asset-select">
+                  <option value="">-- เลือกเพื่อระบุเครื่องที่มีปัญหา --</option>
+                </select>
+                <div class="form-text text-muted" style="font-size:0.76rem;">
+                  <i class="bi bi-info-circle me-1"></i>เลือกเครื่องที่มีปัญหาจากรายชื่อคอมพิวเตอร์ในห้อง หรือเลือก "ซ่อมทั่วไปของห้อง" หากมีปัญหาอื่น ๆ
+                </div>
+              </div>
+
+              <!-- Class Type & Asset No -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">ประเภทครุภัณฑ์ <span class="text-danger">*</span></label>
+                <select class="form-select" id="repair-class" required>
+                  <option value="">เลือกประเภท</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">เลขครุภัณฑ์</label>
+                <input type="text" class="form-control bg-light fw-semibold" id="repair-asset" placeholder="- เลือกจากรายการด้านบน -" readonly>
+              </div>
+
+              <!-- Detail -->
+              <div class="col-12">
+                <label class="form-label fw-semibold">รายละเอียดปัญหา <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="repair-detail" rows="4" required
+                          placeholder="อธิบายอาการเสียหรือปัญหาที่พบ"></textarea>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Images -->
+        <div class="card border-0 shadow-sm mt-4">
+          <div class="card-header bg-white border-bottom py-3">
+            <h5 class="fw-bold mb-0"><i class="bi bi-images me-2"></i>รูปภาพประกอบ (สูงสุด 3 รูป)</h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="border rounded-3 p-3 text-center position-relative" style="min-height: 160px;">
+                  <input type="file" class="d-none" id="img-1" accept="image/*" data-preview="preview-1">
+                  <div class="img-preview" id="preview-1">
+                    <i class="bi bi-camera fs-1 text-muted"></i>
+                    <div class="text-muted mt-2" style="font-size: 0.85rem;">คลิกเพื่อเลือกรูปที่ 1</div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 d-none btn-remove-img" data-target="img-1">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded-3 p-3 text-center position-relative" style="min-height: 160px;">
+                  <input type="file" class="d-none" id="img-2" accept="image/*" data-preview="preview-2">
+                  <div class="img-preview" id="preview-2">
+                    <i class="bi bi-camera fs-1 text-muted"></i>
+                    <div class="text-muted mt-2" style="font-size: 0.85rem;">คลิกเพื่อเลือกรูปที่ 2</div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 d-none btn-remove-img" data-target="img-2">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded-3 p-3 text-center position-relative" style="min-height: 160px;">
+                  <input type="file" class="d-none" id="img-3" accept="image/*" data-preview="preview-3">
+                  <div class="img-preview" id="preview-3">
+                    <i class="bi bi-camera fs-1 text-muted"></i>
+                    <div class="text-muted mt-2" style="font-size: 0.85rem;">คลิกเพื่อเลือกรูปที่ 3</div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 d-none btn-remove-img" data-target="img-3">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="form-text text-muted mt-2">
+              <i class="bi bi-info-circle me-1"></i>รองรับไฟล์ .jpg, .png ขนาดไม่เกิน 5MB ต่อรูป
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="card border-0 shadow-sm mt-4 mb-5">
+          <div class="card-body p-4">
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+              <a href="#repairs" class="btn btn-outline-secondary btn-lg px-5">ยกเลิก</a>
+              <button type="submit" class="btn btn-primary btn-lg px-5" id="btn-submit">
+                <span class="spinner-border spinner-border-sm d-none me-2" id="submit-spinner"></span>
+                <i class="bi bi-send me-2"></i>ส่งใบแจ้งซ่อม
+              </button>
+            </div>
+            <div class="form-text text-muted mt-3 text-center">
+              <i class="bi bi-shield-check me-1"></i>ข้อมูลจะถูกส่งไปยังผู้ดูแลระบบและช่างซ่อม
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+(function() {
+  // ─── Init ────────────────────────────────────────────────────────────────────
+  $('#repair-id').val(App.Utils.generateRepairId());
+
+  // วันที่แจ้ง = วันที่ปัจจุบัน (กำหนดโดยระบบ, readonly)
+  const todayISO = new Date().toISOString().split('T')[0];
+  $('#repair-date').val(todayISO);
+
+  let locationsList = [];
+  let classTypesList = [];
+
+  // ─── Auto-fill reporter from DB ──────────────────────────────────────────────
+  async function prefillReporter() {
+    const sessionUser = App.state.user;
+    if (!sessionUser || !sessionUser.id) {
+      $('#reporter-loading-alert').addClass('d-none');
+      $('#reporter-spinner').parent().html('<i class="bi bi-exclamation-triangle text-warning"></i>');
+      return;
+    }
+
+    try {
+      // ดึงข้อมูลผู้ใช้จาก DB โดยตรงผ่าน GET /api/users/:id
+      const res = await App.API.get(`/users/${sessionUser.id}`);
+      if (res.success && res.data) {
+        const u = res.data;
+
+        // ชื่อผู้แจ้ง (readonly จาก DB)
+        $('#repair-reporter').val(u.fullname || u.username || '');
+
+        // หน่วยงาน — แสดงชื่อใน display field + เก็บ id ใน hidden field
+        if (u.department_id) {
+          const dept = App.CONFIG.DEPARTMENTS_FULL.find(d => d.id == u.department_id);
+          $('#repair-dept-display').val(dept ? dept.name : (u.department_name || `หน่วยงาน #${u.department_id}`));
+          $('#repair-dept').val(u.department_id);
+        } else {
+          $('#repair-dept-display').val('not specified');
+          $('#repair-dept').val('');
+        }
+
+        // เบอร์โทรศัพท์ (readonly จาก DB)
+        $('#repair-phone').val(u.phone || '');
+
+        // สถานที่ — แสดงชื่อใน display field + เก็บ id ใน hidden field
+        if (u.location_id) {
+          const loc = locationsList.find(l => l.id == u.location_id);
+          $('#repair-location-display').val(loc ? loc.name : (u.location_name || `สถานที่ #${u.location_id}`));
+          $('#repair-location').val(u.location_id);
+          loadAssetsForLocation(u.location_id);
+        } else {
+          // Fallback based on custodian username (e.g. it3001 -> ห้อง 3001, itlab -> ห้องปฏิบัติการคอมพิวเตอร์)
+          let searchStr = '';
+          if (u.username.startsWith('it') && u.username.length === 6) {
+            searchStr = u.username.replace('it', '');
+          } else if (u.username === 'itlab') {
+            searchStr = 'ห้องปฏิบัติการคอมพิวเตอร์';
+          }
+          let matchedLoc = null;
+          if (searchStr) {
+            matchedLoc = locationsList.find(l => l.name.includes(searchStr));
+          }
+          if (matchedLoc) {
+            $('#repair-location-display').val(matchedLoc.name);
+            $('#repair-location').val(matchedLoc.id);
+            loadAssetsForLocation(matchedLoc.id);
+          } else {
+            $('#repair-location-display').val('ไม่ระบุสถานที่');
+            $('#repair-location').val('');
+          }
+        }
+
+        // อัปเดตไอคอน: สำเร็จ
+        $('#reporter-spinner').parent().html('<i class="bi bi-person-check-fill text-success"></i>');
+        // ซ่อน loading alert และแสดง success
+        $('#reporter-loading-alert')
+          .removeClass('alert-info')
+          .addClass('alert-success')
+          .html('<i class="bi bi-check-circle-fill me-2"></i>โหลดข้อมูลผู้แจ้งจากฐานข้อมูลสำเร็จ');
+        setTimeout(() => $('#reporter-loading-alert').fadeOut(400, function() { $(this).remove(); }), 2500);
+
+      } else {
+        // Fallback: ใช้ข้อมูล session
+        _fallbackFromSession(sessionUser);
+      }
+    } catch (err) {
+      console.warn('Could not fetch user profile, using session data:', err);
+      _fallbackFromSession(sessionUser);
+    }
+  }
+
+  function _fallbackFromSession(sessionUser) {
+    $('#repair-reporter').val(sessionUser.fullname || sessionUser.username || '');
+    if (sessionUser.department_id || sessionUser.department) {
+      const deptId = sessionUser.department_id || sessionUser.department;
+      const dept = App.CONFIG.DEPARTMENTS_FULL.find(d => d.id == deptId);
+      $('#repair-dept-display').val(dept ? dept.name : `หน่วยงาน #${deptId}`);
+      $('#repair-dept').val(deptId);
+    } else {
+      $('#repair-dept-display').val(sessionUser.department_name || 'ไม่ระบุหน่วยงาน');
+      $('#repair-dept').val('');
+    }
+    
+    // สถานที่ fallback
+    if (sessionUser.location_id) {
+      const loc = locationsList.find(l => l.id == sessionUser.location_id);
+      $('#repair-location-display').val(loc ? loc.name : `สถานที่ #${sessionUser.location_id}`);
+      $('#repair-location').val(sessionUser.location_id);
+      loadAssetsForLocation(sessionUser.location_id);
+    } else {
+      $('#repair-location-display').val('ไม่ระบุสถานที่');
+      $('#repair-location').val('');
+    }
+    
+    $('#repair-phone').val(sessionUser.phone || '');
+    $('#reporter-spinner').parent().html('<i class="bi bi-person text-secondary"></i>');
+    $('#reporter-loading-alert')
+      .removeClass('alert-info')
+      .addClass('alert-warning')
+      .html('<i class="bi bi-exclamation-triangle me-2"></i>ใช้ข้อมูลจาก session (ไม่สามารถดึงข้อมูลจาก DB ได้)');
+    setTimeout(() => $('#reporter-loading-alert').fadeOut(400, function() { $(this).remove(); }), 3000);
+  }
+
+  // Load assets for the specific location/room to list computers with problems
+  async function loadAssetsForLocation(locId) {
+    if (!locId) return;
+    try {
+      $('#repair-asset-select').html('<option value="">-- กำลังโหลดรายการครุภัณฑ์ประจำห้อง... --</option>');
+      const res = await App.API.get('/assets', { location_id: locId });
+      if (res.success && res.data) {
+        const assetsList = res.data;
+        if (assetsList.length === 0) {
+          $('#repair-asset-select').html('<option value="">-- ไม่พบรายการครุภัณฑ์จัดสรรในห้องนี้ --</option>');
+          return;
+        }
+        $('#repair-asset-select').html('<option value="">-- ซ่อมทั่วไปของห้อง (ไม่มีเลขครุภัณฑ์) --</option>');
+        assetsList.forEach(a => {
+          $('#repair-asset-select').append(`<option value="${a.asset_no}" data-class="${a.class_type_id}">${a.asset_no} - ${a.name} (${a.status})</option>`);
+        });
+
+        // Set up change handler
+        $('#repair-asset-select').off('change').on('change', function() {
+          const val = $(this).val();
+          if (val) {
+            const selectedOpt = $(this).find('option:selected');
+            const classId = selectedOpt.data('class');
+            $('#repair-asset').val(val);
+            if (classId) {
+              $('#repair-class').val(classId);
+            }
+          } else {
+            $('#repair-asset').val('');
+            $('#repair-class').val('');
+          }
+        });
+      } else {
+        $('#repair-asset-select').html('<option value="">-- ไม่มีรายการครุภัณฑ์ในห้องนี้ --</option>');
+      }
+    } catch (err) {
+      console.warn('Failed to load assets for location:', err);
+      $('#repair-asset-select').html('<option value="">-- เกิดข้อผิดพลาดในการโหลดครุภัณฑ์ --</option>');
+    }
+  }
+
+  // Load locations and class types asynchronously from API to guarantee they are loaded before prefillReporter runs
+  async function loadFormMetadata() {
+    try {
+      const [locsRes, classesRes] = await Promise.all([
+        App.API.get('/locations'),
+        App.API.get('/class-types')
+      ]);
+
+      if (locsRes.success) {
+        locationsList = locsRes.data;
+      }
+
+      if (classesRes.success) {
+        classTypesList = classesRes.data;
+        $('#repair-class').html('<option value="">เลือกประเภท</option>');
+        classTypesList.forEach(c => {
+          $('#repair-class').append(`<option value="${c.id}">${c.name}</option>`);
+        });
+      }
+
+      await prefillReporter();
+    } catch (err) {
+      console.error('Failed to load form metadata:', err);
+      await prefillReporter();
+    }
+  }
+
+  loadFormMetadata();
+
+  // ─── Image Upload Preview ─────────────────────────────────────────────────────
+  $('.img-preview').on('click', function() {
+    const previewId = $(this).attr('id');
+    const inputId = previewId.replace('preview', 'img');
+    $(`#${inputId}`).trigger('click');
+  });
+
+  $('input[type="file"]').on('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const previewId = $(this).data('preview');
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      $(`#${previewId}`).html(`<img src="${ev.target.result}" class="img-fluid rounded" style="max-height: 140px; object-fit: cover;">`);
+      $(`#${previewId}`).closest('.col-md-4').find('.btn-remove-img').removeClass('d-none');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $('.btn-remove-img').on('click', function() {
+    const target = $(this).data('target');
+    const input = $(`#${target}`);
+    const previewId = input.data('preview');
+    input.val('');
+    $(`#${previewId}`).html(`<i class="bi bi-camera fs-1 text-muted"></i><div class="text-muted mt-2" style="font-size: 0.85rem;">คลิกเพื่อเลือกรูป</div>`);
+    $(this).addClass('d-none');
+  });
+
+  // ─── Form Submission ──────────────────────────────────────────────────────────
+  $('#repair-form').on('submit', function(e) {
+    e.preventDefault();
+    if (!this.checkValidity()) {
+      e.stopPropagation();
+      $(this).addClass('was-validated');
+      App.Utils.showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+      return;
+    }
+
+    // ตรวจสอบ department_id (hidden field ไม่ผ่าน HTML5 required)
+    if (!$('#repair-dept').val()) {
+      App.Utils.showToast('ไม่พบข้อมูลหน่วยงาน กรุณารอโหลดข้อมูลให้เสร็จก่อน', 'warning');
+      return;
+    }
+
+    $('#submit-spinner').removeClass('d-none');
+    $('#btn-submit').prop('disabled', true);
+
+
+    const formData = new FormData();
+    formData.append('repair_id',     $('#repair-id').val());
+    formData.append('reported_date', $('#repair-date').val());
+    formData.append('reporter_name', $('#repair-reporter').val());
+    formData.append('department_id', $('#repair-dept').val());
+    formData.append('phone',         $('#repair-phone').val());
+    formData.append('location_id',   $('#repair-location').val());
+    formData.append('class_type_id', $('#repair-class').val());
+    formData.append('asset_no',      $('#repair-asset').val() || '-');
+    formData.append('detail',        $('#repair-detail').val());
+
+    const img1 = $('#img-1')[0].files[0];
+    const img2 = $('#img-2')[0].files[0];
+    const img3 = $('#img-3')[0].files[0];
+    if (img1) formData.append('images', img1);
+    if (img2) formData.append('images', img2);
+    if (img3) formData.append('images', img3);
+
+    App.API.post('/repairs', formData)
+      .done(function(res) {
+        if (res.success) {
+          App.Utils.showToast('ส่งใบแจ้งซ่อมสำเร็จ', 'success');
+          App.Router.go('repairs');
+        } else {
+          App.Utils.showToast(res.message || 'ส่งใบแจ้งซ่อมล้มเหลว', 'danger');
+        }
+      })
+      .fail(function(err) {
+        console.error('Error submitting repair:', err);
+        App.Utils.showToast('เกิดข้อผิดพลาดในการส่งใบแจ้งซ่อม', 'danger');
+      })
+      .always(function() {
+        $('#submit-spinner').addClass('d-none');
+        $('#btn-submit').prop('disabled', false);
+      });
+  });
+
+})();
+</script>

@@ -1,0 +1,387 @@
+<div class="container-fluid">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <h4 class="fw-bold mb-0">
+      <i class="bi bi-tools text-primary me-2"></i>ตรวจสอบสถานะแจ้งซ่อม
+    </h4>
+    <a href="#repairs/new" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>แจ้งซ่อมใหม่
+    </a>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label fw-semibold" style="font-size: 0.85rem;">ค้นหา</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="filter-search" placeholder="เลขที่, ชื่อ, รายละเอียด...">
+          </div>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold" style="font-size: 0.85rem;">สถานะ</label>
+          <select class="form-select" id="filter-status">
+            <option value="">ทั้งหมด</option>
+            <option value="1">แจ้งซ่อม</option>
+            <option value="2">กำลังดำเนินการ</option>
+            <option value="3">อยู่ระหว่างซ่อม</option>
+            <option value="6">รออะไหล่</option>
+            <option value="4">ซ่อมสำเร็จ</option>
+            <option value="5">ซ่อมไม่สำเร็จ</option>
+            <option value="8">ยกเลิกการซ่อม</option>
+            <option value="7">ส่งซ่อมภายนอก</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold" style="font-size: 0.85rem;">หน่วยงาน</label>
+          <select class="form-select" id="filter-dept">
+            <option value="">ทั้งหมด</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold" style="font-size: 0.85rem;">จากวันที่</label>
+          <input type="date" class="form-control" id="filter-date-from">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label fw-semibold" style="font-size: 0.85rem;">ถึงวันที่</label>
+          <input type="date" class="form-control" id="filter-date-to">
+        </div>
+        <div class="col-12 col-md-1">
+          <button class="btn btn-outline-secondary w-100" id="btn-reset-filter">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Repairs Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle" id="repairs-table">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">เลขที่</th>
+              <th>สถานะ</th>
+              <th>วันที่แจ้ง</th>
+              <th>ชื่อ</th>
+              <th>หน่วยงาน</th>
+              <th>เบอร์</th>
+              <th>สถานที่</th>
+              <th>รายการ</th>
+              <th>เลขครุภัณฑ์</th>
+              <th>รายละเอียด</th>
+              <th>ภาพ1</th>
+              <th>ภาพ2</th>
+              <th>ภาพ3</th>
+              <th>ผู้รับงาน</th>
+              <th class="pe-4 text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody id="repairs-tbody">
+            <tr><td colspan="15" class="text-center py-5 text-muted">กำลังโหลดข้อมูล...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center p-3 border-top">
+        <span class="text-muted" style="font-size: 0.85rem;" id="pagination-info">แสดง 0 รายการ</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Track Repair Status -->
+<div class="modal fade" id="modal-track-repair" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+      <div class="modal-body p-4">
+        <h4 class="fw-bold mb-4 text-center text-primary">
+          📝 ติดตามสถานะแจ้งซ่อม
+        </h4>
+        
+        <div class="row g-4 mb-4">
+          <!-- Left side: Image Carousel / Thumbnail -->
+          <div class="col-md-5">
+            <div id="carouselRepairImages" class="carousel slide bg-light rounded" data-bs-ride="carousel" style="overflow: hidden; height: 260px; position: relative;">
+              <div class="carousel-inner h-100" id="modal-carousel-inner">
+                <!-- JS inserts images -->
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#carouselRepairImages" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(1);"></span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#carouselRepairImages" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(1);"></span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Right side: Details -->
+          <div class="col-md-7">
+            <div class="d-flex flex-column gap-2 text-dark" style="font-size: 0.95rem;">
+              <div><span class="text-warning">👤</span> <span class="fw-bold">ผู้ขอบริการ :</span> <span id="track-reporter">-</span></div>
+              <div><span class="text-info">🏢</span> <span class="fw-bold">หน่วยงาน :</span> <span id="track-dept">-</span></div>
+              <div><span class="text-danger">📞</span> <span class="fw-bold">เบอร์ :</span> <span id="track-phone">-</span></div>
+              <div><span class="text-primary">🏢</span> <span class="fw-bold">สถานที่ :</span> <span id="track-location">-</span></div>
+              <div><span class="text-warning">📝</span> <span class="fw-bold">ประเภท :</span> <span id="track-class">-</span></div>
+              <div><span class="text-primary">🆔</span> <span class="fw-bold">เลขครุภัณฑ์ :</span> <span id="track-asset-no">-</span></div>
+              <div><span class="text-danger">📦</span> <span class="fw-bold">รายละเอียด :</span> <span id="track-detail">-</span></div>
+              <div><span class="text-warning">👷</span> <span class="fw-bold">ผู้รับแจ้ง :</span> <span id="track-assignee">-</span></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Timeline Table -->
+        <h6 class="fw-bold mb-2">ประวัติการดำเนินงาน</h6>
+        <div class="table-responsive mb-4">
+          <table class="table table-sm table-bordered align-middle text-center" style="font-size: 0.88rem;">
+            <thead class="table-light">
+              <tr>
+                <th>วันที่ทำรายการ</th>
+                <th>เลขที่</th>
+                <th>สถานะ</th>
+                <th>ชื่อสกุล</th>
+                <th>อัพเดท</th>
+              </tr>
+            </thead>
+            <tbody id="track-timeline-tbody">
+              <!-- Loaded by JS -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="text-center">
+          <button type="button" class="btn btn-danger px-4" data-bs-dismiss="modal" style="border-radius: 8px;">ปิด</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Populate departments from config
+  const deptSelect = $('#filter-dept');
+  App.CONFIG.DEPARTMENTS_FULL.forEach(d => {
+    deptSelect.append(`<option value="${d.id}">${d.name}</option>`);
+  });
+
+  let repairsData = [];
+
+  function fetchRepairs() {
+    const search = $('#filter-search').val();
+    const status = $('#filter-status').val();
+    const dept = $('#filter-dept').val();
+    const query = { limit: 100 };
+    if (search) query.search = search;
+    if (status) query.status = status;
+    if (dept) query.dept = dept;
+
+    App.API.getRepairs(query)
+      .done(function(res) {
+        if (!res.success) return;
+        repairsData = res.data;
+        filterAndRenderTable();
+      })
+      .fail(function(err) {
+        console.error('Error fetching repairs:', err);
+      });
+  }
+
+  function filterAndRenderTable() {
+    const from = $('#filter-date-from').val();
+    const to = $('#filter-date-to').val();
+
+    let filtered = repairsData.filter(r => {
+      const rDate = r.reported_date ? r.reported_date.split('T')[0] : '';
+      if (from && rDate < from) return false;
+      if (to && rDate > to) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      $('#repairs-tbody').html('<tr><td colspan="15" class="text-center py-5 text-muted">ไม่พบรายการ</td></tr>');
+      $('#pagination-info').text('แสดง 0 รายการ');
+      return;
+    }
+
+    const rows = filtered.map(r => {
+      const img1 = r.img1_url ? 
+        `<a href="${r.img1_url}" target="_blank" class="btn btn-sm btn-primary py-0 px-2" style="font-size:0.75rem;"><i class="bi bi-image"></i></a>` : 
+        `<button class="btn btn-sm btn-danger py-0 px-2" style="font-size:0.75rem;" disabled><i class="bi bi-image"></i></button>`;
+      const img2 = r.img2_url ? 
+        `<a href="${r.img2_url}" target="_blank" class="btn btn-sm btn-primary py-0 px-2" style="font-size:0.75rem;"><i class="bi bi-image"></i></a>` : 
+        `<button class="btn btn-sm btn-danger py-0 px-2" style="font-size:0.75rem;" disabled><i class="bi bi-image"></i></button>`;
+      const img3 = r.img3_url ? 
+        `<a href="${r.img3_url}" target="_blank" class="btn btn-sm btn-primary py-0 px-2" style="font-size:0.75rem;"><i class="bi bi-image"></i></a>` : 
+        `<button class="btn btn-sm btn-danger py-0 px-2" style="font-size:0.75rem;" disabled><i class="bi bi-image"></i></button>`;
+
+      return `
+        <tr>
+          <td class="ps-4 fw-semibold text-primary">${r.repair_id}</td>
+          <td>${App.Utils.getStatusBadge(r.status_id)}</td>
+          <td style="font-size:0.85rem;">${App.Utils.formatDateThai(r.reported_date)}</td>
+          <td><div class="fw-semibold">${r.reporter_name}</div></td>
+          <td style="font-size:0.85rem;">${r.department_name || '-'}</td>
+          <td style="font-size:0.85rem;">${r.phone || '-'}</td>
+          <td style="font-size:0.85rem;">${r.location_name || '-'}</td>
+          <td style="font-size:0.85rem;">${r.class_type_name || '-'}</td>
+          <td style="font-size:0.85rem;">${r.asset_no || '-'}</td>
+          <td style="font-size:0.85rem; max-width: 150px;" class="text-truncate" title="${r.detail}">${r.detail}</td>
+          <td>${img1}</td>
+          <td>${img2}</td>
+          <td>${img3}</td>
+          <td style="font-size:0.85rem;">${r.assignee_name || 'รอมอบหมาย'}</td>
+          <td class="pe-4 text-end">
+            <div class="btn-group btn-group-sm">
+              <a href="#repairs/${r.repair_id}" class="btn btn-primary" title="ดูรายละเอียด">
+                <i class="bi bi-eye"></i>
+              </a>
+              <button class="btn btn-outline-warning" title="ติดตามสถานะ" onclick="window.trackRepairStatus('${r.repair_id}')">
+                <i class="bi bi-clock-history"></i>
+              </button>
+              <button class="btn btn-outline-secondary" title="ยกเลิกการซ่อม" onclick="window.cancelRepair('${r.repair_id}')">
+                <i class="bi bi-slash-circle"></i>
+              </button>
+              <button class="btn btn-danger" title="ลบ" onclick="window.deleteRepair('${r.repair_id}')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $('#repairs-tbody').html(rows);
+    $('#pagination-info').text(`แสดง 1 ถึง ${filtered.length} จาก ${filtered.length} แถว`);
+  }
+
+  // Cancel Repair (Status 8 = ยกเลิกการซ่อม)
+  window.cancelRepair = function(repairId) {
+    if (!confirm('ยืนยันยกเลิกการซ่อม ' + repairId + ' ใช่หรือไม่?')) return;
+    App.API.put('/repairs/' + repairId + '/status', { status_id: 8, note: 'ยกเลิกโดยผู้แจ้งซ่อม' })
+      .done(function(res) {
+        if (res.success) {
+          App.Utils.showToast('ยกเลิกใบแจ้งซ่อม ' + repairId + ' สำเร็จ', 'info');
+          fetchRepairs();
+        } else {
+          App.Utils.showToast(res.message || 'ยกเลิกไม่สำเร็จ', 'danger');
+        }
+      })
+      .fail(function() { App.Utils.showToast('เกิดข้อผิดพลาดในการยกเลิก', 'danger'); });
+  };
+
+  // Delete Repair (Admin only)
+  window.deleteRepair = function(repairId) {
+    var isAdmin = App.state && App.state.user && App.state.user.status === 'SuperAdmin';
+    if (!isAdmin) {
+      App.Utils.showToast('ไม่มีสิทธิ์ลบรายการ (เฉพาะ SuperAdmin เท่านั้น)', 'warning');
+      return;
+    }
+    if (!confirm('ต้องการลบใบแจ้งซ่อม ' + repairId + ' ใช่หรือไม่? (ไม่สามารถย้อนกลับได้)')) return;
+    App.API.del('/repairs/' + repairId)
+      .done(function(res) {
+        if (res.success) {
+          App.Utils.showToast('ลบใบแจ้งซ่อม ' + repairId + ' สำเร็จ', 'success');
+          fetchRepairs();
+        } else {
+          App.Utils.showToast(res.message || 'ลบไม่สำเร็จ', 'danger');
+        }
+      })
+      .fail(function() { App.Utils.showToast('เกิดข้อผิดพลาดในการลบ', 'danger'); });
+  };
+
+  // Track Repair Status Action
+  window.trackRepairStatus = function(repairId) {
+    App.API.get(`/repairs/${repairId}`)
+      .done(res => {
+        if (!res.success) return;
+        const r = res.data;
+        
+        // Map fields to Modal
+        $('#track-reporter').text(r.reporter_name || '-');
+        $('#track-dept').text(r.department_name || '-');
+        $('#track-phone').text(r.phone || '-');
+        $('#track-location').text(r.location_name || '-');
+        $('#track-class').text(r.class_type_name || '-');
+        $('#track-asset-no').text(r.asset_no || '-');
+        $('#track-detail').text(r.detail || '-');
+        $('#track-assignee').text(r.assignee_name || '-');
+        
+        // Carousel Images
+        let carHtml = '';
+        let active = 'active';
+        [r.img1_url, r.img2_url, r.img3_url].forEach(img => {
+          if (img) {
+            carHtml += `
+              <div class="carousel-item ${active} h-100">
+                <img src="${img}" class="d-block w-100 h-100" style="object-fit: cover;">
+              </div>
+            `;
+            active = '';
+          }
+        });
+        if (!carHtml) {
+          carHtml = `
+            <div class="carousel-item active h-100 d-flex align-items-center justify-content-center text-muted">
+              <i class="bi bi-image fs-1 opacity-25"></i>
+            </div>
+          `;
+        }
+        $('#modal-carousel-inner').html(carHtml);
+
+        // Timeline logs
+        let logRows = '';
+        if (r.logs && r.logs.length > 0) {
+          logRows = r.logs.map(log => {
+            const actorName = log.actor || 'ช่างซ่อมบำรุง';
+            const logName = log.action || 'อัปเดตสถานะ';
+            
+            return `
+              <tr>
+                <td>${App.Utils.formatDateThai(log.created_at)}</td>
+                <td class="fw-semibold text-primary">${r.repair_id}</td>
+                <td>${App.Utils.getStatusBadge(log.status_id)}</td>
+                <td>${actorName}</td>
+                <td>${logName}</td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          logRows = `
+            <tr>
+              <td>${App.Utils.formatDateThai(r.reported_date)}</td>
+              <td class="fw-semibold text-primary">${r.repair_id}</td>
+              <td>${App.Utils.getStatusBadge(1)}</td>
+              <td>(ผู้ขอ) ${r.reporter_name}</td>
+              <td>รอตรวจสอบ</td>
+            </tr>
+          `;
+        }
+        $('#track-timeline-tbody').html(logRows);
+
+        // Show Modal
+        const myModal = new bootstrap.Modal(document.getElementById('modal-track-repair'));
+        myModal.show();
+      })
+      .fail(err => {
+        console.error('Error fetching repair logs details:', err);
+      });
+  };
+
+  // Event listeners
+  $('#filter-search, #filter-status, #filter-dept').on('input change', fetchRepairs);
+  $('#filter-date-from, #filter-date-to').on('change', filterAndRenderTable);
+
+  $('#btn-reset-filter').on('click', function() {
+    $('#filter-search, #filter-status, #filter-dept, #filter-date-from, #filter-date-to').val('');
+    fetchRepairs();
+  });
+
+  // Initial fetch
+  fetchRepairs();
+})();
+</script>

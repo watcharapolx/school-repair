@@ -1,0 +1,138 @@
+<div class="container-fluid">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <h4 class="fw-bold mb-0">
+      <i class="bi bi-clipboard-check text-primary me-2"></i>ตรวจสอบงานแจ้งซ่อม
+    </h4>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="form-label fw-semibold" style="font-size: 0.85rem;">ค้นหาด่วน</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="verify-search" placeholder="เลขที่, ผู้แจ้ง, รายละเอียด...">
+          </div>
+        </div>
+        <div class="col-12 col-md-8 text-end">
+          <span class="text-muted small">แสดงเฉพาะรายการที่ "แจ้งซ่อมใหม่" และรอการตรวจสอบ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">เลขที่</th>
+              <th>สถานะ</th>
+              <th>วันที่แจ้ง</th>
+              <th>ชื่อผู้แจ้ง</th>
+              <th>หน่วยงาน</th>
+              <th>เบอร์</th>
+              <th>สถานที่</th>
+              <th>ประเภท</th>
+              <th>เลขครุภัณฑ์</th>
+              <th>รายละเอียด</th>
+              <th>ภาพ1</th>
+              <th>ภาพ2</th>
+              <th>ภาพ3</th>
+              <th class="pe-4 text-end">ตรวจสอบ</th>
+            </tr>
+          </thead>
+          <tbody id="verify-tbody">
+            <tr><td colspan="14" class="text-center py-5 text-muted">กำลังโหลดข้อมูล...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center p-3 border-top">
+        <span class="text-muted" style="font-size: 0.85rem;" id="verify-info">แสดง 0 รายการ</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let repairs = [];
+
+  function fetchVerifyList() {
+    // Only fetch status 1 (แจ้งซ่อม)
+    App.API.getRepairs({ status: 1, limit: 100 })
+      .done(function(res) {
+        if (!res.success) return;
+        repairs = res.data;
+        renderVerifyTable();
+      })
+      .fail(function(err) {
+        console.error('Error fetching verify list:', err);
+      });
+  }
+
+  function renderVerifyTable() {
+    const searchVal = $('#verify-search').val().toLowerCase();
+    
+    let filtered = repairs.filter(r => {
+      if (searchVal) {
+        return (
+          r.repair_id.toLowerCase().includes(searchVal) ||
+          r.reporter_name.toLowerCase().includes(searchVal) ||
+          (r.detail && r.detail.toLowerCase().includes(searchVal))
+        );
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      $('#verify-tbody').html('<tr><td colspan="14" class="text-center py-5 text-muted">ไม่มีข้อมูลในตาราง</td></tr>');
+      $('#verify-info').text('แสดงทั้งหมด 0 ถึง 0 จาก 0 รายการ');
+      return;
+    }
+
+    const rows = filtered.map(r => {
+      // Image icons
+      const img1 = r.img1_url ? `<a href="${r.img1_url}" target="_blank" class="btn btn-sm btn-link text-primary p-0"><i class="bi bi-image fs-5"></i></a>` : '-';
+      const img2 = r.img2_url ? `<a href="${r.img2_url}" target="_blank" class="btn btn-sm btn-link text-primary p-0"><i class="bi bi-image fs-5"></i></a>` : '-';
+      const img3 = r.img3_url ? `<a href="${r.img3_url}" target="_blank" class="btn btn-sm btn-link text-primary p-0"><i class="bi bi-image fs-5"></i></a>` : '-';
+
+      return `
+        <tr>
+          <td class="ps-4 fw-semibold text-primary">${r.repair_id}</td>
+          <td>${App.Utils.getStatusBadge(r.status_id)}</td>
+          <td>${App.Utils.formatDateThai(r.reported_date)}</td>
+          <td><div class="fw-semibold">${r.reporter_name}</div></td>
+          <td style="font-size: 0.85rem;">${r.department_name || '-'}</td>
+          <td style="font-size: 0.85rem;">${r.phone || '-'}</td>
+          <td style="font-size: 0.85rem;">${r.location_name || '-'}</td>
+          <td style="font-size: 0.85rem;">${r.class_type_name || '-'}</td>
+          <td style="font-size: 0.85rem;">${r.asset_no || '-'}</td>
+          <td style="font-size: 0.85rem; max-width: 150px;" class="text-truncate" title="${r.detail}">${r.detail}</td>
+          <td>${img1}</td>
+          <td>${img2}</td>
+          <td>${img3}</td>
+          <td class="pe-4 text-end">
+            <a href="#repairs/${r.repair_id}" class="btn btn-sm btn-primary">
+              <i class="bi bi-shield-check"></i> ตรวจสอบ
+            </a>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $('#verify-tbody').html(rows);
+    $('#verify-info').text(`แสดงทั้งหมด 1 ถึง ${filtered.length} จาก ${filtered.length} รายการ`);
+  }
+
+  // Events
+  $('#verify-search').on('input', renderVerifyTable);
+
+  // Initial fetch
+  fetchVerifyList();
+})();
+</script>
