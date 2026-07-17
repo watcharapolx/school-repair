@@ -179,7 +179,7 @@ const querystring = require('querystring');
 
 async function sendLineNotify(message) {
   try {
-    const [rows] = await db.execute('SELECT setting_value FROM settings WHERE setting_key = "line_notify_token"');
+    const [rows] = await db.execute("SELECT setting_value FROM settings WHERE setting_key = 'line_notify_token'");
     let token = rows[0]?.setting_value;
     if (!token) {
       token = process.env.LINE_NOTIFY_TOKEN;
@@ -237,7 +237,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const [rows] = await db.execute(
-      'SELECT * FROM users WHERE username = ? AND status != "inactive"',
+      "SELECT * FROM users WHERE username = ? AND status != 'inactive'",
       [username]
     );
 
