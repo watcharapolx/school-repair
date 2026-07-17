@@ -47,7 +47,6 @@ async function testDB() {
   } catch (err) {
     console.error('❌ Database connection failed:', err.message);
     console.error('ตรวจสอบ .env และ MariaDB ว่ารันอยู่หรือไม่');
-    process.exit(1);
   }
 }
 testDB();
@@ -1944,6 +1943,8 @@ function startServer(port) {
   });
 }
 
-startServer(PORT);
+if (!process.env.VERCEL) {
+  startServer(PORT);
+}
 
 module.exports = app;
