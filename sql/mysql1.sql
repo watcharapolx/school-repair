@@ -1,3 +1,4 @@
+SET SESSION sql_require_primary_key = 0;
 
 -- Dumping database structure for school_repair
 CREATE DATABASE IF NOT EXISTS `school_repair` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
