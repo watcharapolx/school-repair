@@ -1,92 +1,106 @@
-# ระบบแจ้งซ่อมบำรุงในสถานศึกษา
+# 🛠️ ระบบแจ้งซ่อมบำรุงในสถานศึกษา (School Repair & Maintenance System)
 
-School Repair & Maintenance System — Full-Stack Web Application
+ระบบแจ้งซ่อมและซ่อมบำรุงอุปกรณ์/อาคารสถานที่ภายในสถานศึกษา แบบ Full-Stack Web Application ที่ถูกออกแบบมาเพื่อช่วยบริหารจัดการงานซ่อมบำรุงอย่างเป็นระบบ ติดตามสถานะงานซ่อม จัดการอะไหล่คงคลัง และการจัดการสินทรัพย์ภายในโรงเรียน
 
-## Tech Stack
+---
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | Node.js + Express |
-| Database | MySQL 8.0 |
-| Frontend | HTML5 + Bootstrap 5 + jQuery |
-| Auth | express-session + bcrypt |
-| Upload | Multer (local) / Google Drive API |
-| PDF | PDFKit |
-| Notifications | LINE Notify API |
+## 🚀 ฟีเจอร์หลักของระบบ (Features)
 
-## Quick Start
+*   🔒 **ระบบสิทธิ์ผู้ใช้งาน (Role-Based Access Control)**
+    *   **SuperAdmin (ผู้ดูแลระบบสูงสุด):** สิทธิ์เข้าถึงทุกส่วนของระบบ จัดการผู้ใช้ ตั้งค่าระบบ รายงานผลการทำงาน และจัดการรายการแจ้งซ่อมทั้งหมด
+    *   **SuperUser (ช่าง/เจ้าหน้าที่พัสดุ):** จัดการรายการแจ้งซ่อม, จัดการอะไหล่คงคลัง (Inventory) และเรียกดูรายการสินทรัพย์
+    *   **User (ครู/บุคลากร):** แจ้งซ่อมอุปกรณ์/สถานที่ และติดตามสถานะงานแจ้งซ่อมของตนเอง
+*   📝 **ระบบแจ้งซ่อมบำรุง (Repair Ticket System)**
+    *   สร้างใบแจ้งซ่อมพร้อมอัปโหลดรูปภาพประกอบได้สูงสุด 3 รูป
+    *   ระบบเก็บลายเซ็นดิจิทัล (Digital Signature Capture) ผ่าน HTML5 Canvas
+    *   กระบวนการทำงาน (Workflow) และบันทึกประวัติการเปลี่ยนสถานะการซ่อม (Audit Logs)
+*   📦 **ระบบคลังอะไหล่ (Spare Parts & Inventory)**
+    *   บันทึกข้อมูลอะไหล่และอัปเดตจำนวนคงคลังผ่านการทำธุรกรรม (Stock Transactions)
+*   📋 **ระบบจัดการสินทรัพย์ (Asset Management)**
+    *   ลงทะเบียนสินทรัพย์ภายในสถานศึกษา
+    *   รองรับการสร้างและพิมพ์รหัสผ่าน QR Code เพื่อใช้ติดที่ตัวสินทรัพย์
+*   🔔 **การแจ้งเตือน (Notifications)**
+    *   เชื่อมต่อบริการ LINE Notify ส่งข้อความแจ้งเตือนอัตโนมัติเมื่อมีการแจ้งซ่อมหรืออัปเดตสถานะ
+*   📄 **การส่งออกเอกสาร (Document Export)**
+    *   ส่งออกใบแจ้งซ่อมและใบงานซ่อมเป็นไฟล์ PDF
 
-```bash
-# 1. Clone & Install
-cd school-repair-frontend
-npm install
+---
 
-# 2. Setup Database
-cp .env.example .env
-# Edit .env with your MySQL credentials
-# Run sql/schema.sql and sql/seed.sql
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
 
-# 3. Start Server
-npm run dev
+| ส่วนประกอบ | เทคโนโลยีที่เลือกใช้ |
+| :--- | :--- |
+| **Backend** | Node.js + Express.js |
+| **Database** | MySQL 8.0 / MariaDB |
+| **Frontend** | HTML5 + CSS3 (Bootstrap 5) + JavaScript (jQuery) |
+| **Authentication** | Session-based Auth (express-session) + รหัสผ่านเข้ารหัสด้วย bcrypt |
+| **File Upload** | Multer (จัดเก็บใน Local server) / รองรับ Google Drive API |
+| **PDF Generation** | PDFKit |
+| **Line Notify** | LINE Notify API |
 
-# 4. Open Browser
-open http://localhost:3000
-```
+---
 
-## Project Structure
+## 📂 โครงสร้างของโปรเจกต์ (Project Structure)
 
-```
-school-repair-frontend/
-├── app.js              # Express backend
-├── package.json
-├── .env.example
-├── public/
-│   ├── app.js          # Front-end SPA router & API client
+```text
+school-repair/
+├── app.js                  # ตัวควบคุมหลักฝั่งเซิร์ฟเวอร์ (Express Backend)
+├── package.json            # ไฟล์จัดการ Dependencies และ Scripts
+├── .env.example            # ไฟล์ตัวอย่างสำหรับการตั้งค่า Environment Variables
+├── .gitignore              # ไฟล์กำหนดสิทธิ์ไม่ให้อัปโหลดไฟล์บางประเภทขึ้น GitHub
+├── public/                 # โฟลเดอร์สำหรับ Static files
+│   ├── app.js              # ตัวจัดการ Front-end Router & API Client
 │   ├── css/
-│   │   └── custom.css  # Bootstrap overrides
-│   ├── js/             # Additional JS modules
-│   └── uploads/        # Uploaded images/PDFs
-├── views/
-│   ├── index.html      # Main layout (sidebar + content area)
-│   ├── login.html      # Login page
-│   ├── dashboard.html  # Dashboard with stats
-│   ├── repair-list.html    # Repair tickets list
-│   ├── repair-form.html    # Create new repair
-│   ├── repair-detail.html  # Repair detail + status flow
-│   ├── inventory.html      # Spare parts & stock
-│   ├── assets.html         # Asset management
-│   ├── users.html          # User management (admin)
-│   └── settings.html       # System settings
-└── sql/
-    ├── schema.sql      # Database schema
-    └── seed.sql        # Initial data
+│   │   └── custom.css      # ไฟล์ปรับแต่งสไตล์เพิ่มเติมจาก Bootstrap 5
+│   └── uploads/            # พื้นที่จัดเก็บไฟล์รูปภาพที่อัปโหลดเข้ามา
+├── views/                  # ส่วนแสดงผลสำหรับผู้ใช้ (HTML Pages)
+│   ├── index.html          # โครงร่างหลัก (Sidebar & Main content container)
+│   ├── login.html          # หน้าเข้าสู่ระบบ
+│   ├── dashboard.html      # หน้าสรุปผลข้อมูลสถิติต่างๆ
+│   ├── repair-list.html    # หน้ารายการใบแจ้งซ่อม
+│   ├── repair-form.html    # หน้าฟอร์มสร้างใบแจ้งซ่อม
+│   ├── repair-detail.html  # หน้าแสดงรายละเอียดและการดำเนินงานของช่าง
+│   ├── inventory.html      # หน้าจัดการคลังอะไหล่และอุปกรณ์
+│   ├── assets.html         # หน้าจัดการสินทรัพย์โรงเรียน
+│   ├── users.html          # หน้าจัดการผู้ใช้งานในระบบ (Admin เท่านั้น)
+│   └── settings.html       # หน้าตั้งค่าระบบ
+└── sql/                    # โฟลเดอร์เก็บฐานข้อมูล
+    ├── schema.sql          # โครงสร้างตารางทั้งหมดของระบบ
+    └── seed.sql            # ข้อมูลเริ่มต้นระบบจำลองสำหรับการทดสอบ
 ```
 
-## User Roles
+---
 
-| Role | Permissions |
-|------|------------|
-| **SuperAdmin** | Full access: users, settings, reports, all repairs |
-| **SuperUser** | Repair management, inventory, asset view |
-| **User** | Create repair tickets, view own tickets |
+## 🚀 ขั้นตอนการติดตั้งและใช้งาน (Quick Start)
 
-## API Endpoints
+### 1. โคลนโปรเจกต์และติดตั้งโมดูล
+```bash
+# เข้าสู่โฟลเดอร์โปรเจกต์
+cd school-repair
 
-See the design widget for full API documentation.
+# ติดตั้งโมดูลเสริมต่างๆ
+npm install
+```
 
-## Features
+### 2. ตั้งค่าฐานข้อมูล (Database Setup)
+1. คัดลอกและเปลี่ยนชื่อไฟล์ตั้งค่าระบบ:
+   ```bash
+   cp .env.example .env
+   ```
+2. เปิดไฟล์ `.env` ขึ้นมาแก้ไขข้อมูลเชื่อมต่อฐานข้อมูล MySQL ของคุณ เช่น `DB_HOST`, `DB_USER`, `DB_PASS`, และ `DB_NAME`
+3. รันสคริปต์ SQL ในโฟลเดอร์ `sql/schema.sql` และ `sql/seed.sql` ในเครื่องของคุณ เพื่อเตรียมโครงสร้างตารางและข้อมูลตั้งต้น
 
-- ✅ Session-based authentication with bcrypt
-- ✅ Role-based access control
-- ✅ Repair ticket creation with image upload (3 images)
-- ✅ Digital signature capture (HTML5 Canvas)
-- ✅ Status workflow with audit logs
-- ✅ Spare parts inventory with stock transactions
-- ✅ Asset management with QR code generation
-- ✅ LINE Notify integration
-- ✅ PDF export for repair tickets
-- ✅ Responsive design (mobile-first)
+### 3. รันระบบซอฟต์แวร์
+```bash
+npm run dev
+```
 
-## License
+### 4. เปิดใช้งานผ่านเบราว์เซอร์
+เข้าสู่เว็บไซต์ผ่านลิงก์ด้านล่างนี้:
+👉 [http://localhost:3000](http://localhost:3000)
 
-MIT
+---
+
+## 📄 สิทธิ์การใช้งาน (License)
+
+โปรเจกต์นี้ใช้สัญญาอนุญาตแบบ **MIT License**
